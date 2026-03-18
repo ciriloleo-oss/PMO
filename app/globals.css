@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --line: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --brand: #0b1220;
+}
+
+html, body {
+  background: linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+  color: var(--text);
+}
+
+body {
+  min-height: 100vh;
+}
+
+.card {
+  @apply rounded-3xl border border-slate-200 bg-white shadow-sm;
+}
+
+.metric-card {
+  @apply card p-5;
+}
+
+.page-shell {
+  @apply mx-auto max-w-7xl p-4 md:p-6;
+}
+
+.page-header {
+  @apply rounded-[28px] bg-slate-900 text-white shadow-xl;
+}
+
+.page-header-inner {
+  @apply flex flex-col gap-5 p-8 lg:flex-row lg:items-center lg:justify-between;
+}
