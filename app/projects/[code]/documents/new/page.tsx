@@ -4,10 +4,27 @@ import { PageHeader } from "@/components/page-header";
 import { DocumentForm } from "@/components/document-form";
 import { defaultDocumentFormValues } from "@/types/document-form";
 import { supabase } from "@/lib/supabase";
+import type { Database } from "@/types/database";
 
-export default async function NewDocumentPage({ params }: { params: { code: string } }) {
-  const { data: project, error } = await supabase.from("projects").select("id, code, name").eq("code", params.code).single();
-  if (error || !project) notFound();
+type ProjectRow = Pick<
+  Database["public"]["Tables"]["projects"]["Row"],
+  "id" | "code" | "name"
+>;
+
+export default async function NewDocumentPage({
+  params,
+}: {
+  params: { code: string };
+}) {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id, code, name")
+    .eq("code", params.code)
+    .single();
+
+  if (error || !data) notFound();
+
+  const project: ProjectRow = data;
 
   return (
     <AppShell>
@@ -20,7 +37,10 @@ export default async function NewDocumentPage({ params }: { params: { code: stri
         <DocumentForm
           projectId={project.id}
           projectCode={project.code}
-          initialValues={{ ...defaultDocumentFormValues, related_entity_id: project.id }}
+          initialValues={{
+            ...defaultDocumentFormValues,
+            related_entity_id: project.id,
+          }}
         />
       </div>
     </AppShell>

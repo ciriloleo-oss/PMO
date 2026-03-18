@@ -4,15 +4,27 @@ import { PageHeader } from "@/components/page-header";
 import { UpdateForm } from "@/components/update-form";
 import { defaultUpdateFormValues } from "@/types/update-form";
 import { supabase } from "@/lib/supabase";
+import type { Database } from "@/types/database";
 
-export default async function NewUpdatePage({ params }: { params: { code: string } }) {
-  const { data: project, error } = await supabase
+type ProjectRow = Pick<
+  Database["public"]["Tables"]["projects"]["Row"],
+  "id" | "code" | "name"
+>;
+
+export default async function NewUpdatePage({
+  params,
+}: {
+  params: { code: string };
+}) {
+  const { data, error } = await supabase
     .from("projects")
     .select("id, code, name")
     .eq("code", params.code)
     .single();
 
-  if (error || !project) notFound();
+  if (error || !data) notFound();
+
+  const project: ProjectRow = data;
 
   return (
     <AppShell>
@@ -22,7 +34,11 @@ export default async function NewUpdatePage({ params }: { params: { code: string
           title={`Nova atualização - ${project.name}`}
           description="Registre o andamento real do projeto e defina se a atualização será pública ou interna."
         />
-        <UpdateForm projectId={project.id} projectCode={project.code} initialValues={defaultUpdateFormValues} />
+        <UpdateForm
+          projectId={project.id}
+          projectCode={project.code}
+          initialValues={defaultUpdateFormValues}
+        />
       </div>
     </AppShell>
   );

@@ -2,12 +2,18 @@ import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { PublicProjectCard } from "@/components/public-project-card";
 import { supabase } from "@/lib/supabase";
+import type { Database } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+type PublicProjectRow = Pick<
+  Database["public"]["Tables"]["projects"]["Row"],
+  "id" | "code" | "name" | "public_summary" | "physical_progress" | "planned_end_date" | "status"
+>;
+
 export default async function ResidentPortalPage() {
-  const { data: projects, error } = await supabase
+  const { data, error } = await supabase
     .from("projects")
     .select("id, code, name, public_summary, physical_progress, planned_end_date, status")
     .eq("visibility", "public")
@@ -16,6 +22,8 @@ export default async function ResidentPortalPage() {
   if (error) {
     throw new Error(`Erro ao carregar portal do morador: ${error.message}`);
   }
+
+  const projects: PublicProjectRow[] = data ?? [];
 
   return (
     <AppShell>
@@ -27,12 +35,12 @@ export default async function ResidentPortalPage() {
         />
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {(projects ?? []).map((project) => (
+          {projects.map((project) => (
             <PublicProjectCard key={project.code} project={project} />
           ))}
         </div>
 
-        {projects?.length === 0 ? (
+        {projects.length === 0 ? (
           <div className="card p-5 text-sm text-slate-600">
             Nenhum projeto público disponível no momento.
           </div>

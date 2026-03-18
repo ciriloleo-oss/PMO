@@ -24,7 +24,10 @@ export function DocumentForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function setField<K extends keyof DocumentFormValues>(key: K, value: DocumentFormValues[K]) {
+  function setField<K extends keyof DocumentFormValues>(
+    key: K,
+    value: DocumentFormValues[K]
+  ) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
@@ -33,7 +36,7 @@ export function DocumentForm({
     setSaving(true);
     setError(null);
 
-    const payload = {
+    const payload: any = {
       project_id: projectId,
       related_entity_type: values.related_entity_type || "project",
       related_entity_id: values.related_entity_id || projectId,
@@ -51,46 +54,153 @@ export function DocumentForm({
     try {
       const { error } = await supabase.from("documents").insert(payload);
       if (error) throw error;
+
       router.push(`/projects/${projectCode}/documents?refresh=${Date.now()}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar documento.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
-  const input = "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none";
+  const input =
+    "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none";
   const label = "text-xs font-semibold uppercase tracking-wide text-slate-500";
 
   return (
     <div className="card p-5">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <div><label className={label}>Categoria</label><input className={input} value={values.category} onChange={(e)=>setField("category", e.target.value)} required /></div>
-          <div><label className={label}>Título</label><input className={input} value={values.title} onChange={(e)=>setField("title", e.target.value)} required /></div>
-          <div><label className={label}>Nome do arquivo</label><input className={input} value={values.file_name} onChange={(e)=>setField("file_name", e.target.value)} required /></div>
-          <div><label className={label}>Caminho / Storage path</label><input className={input} value={values.file_path} onChange={(e)=>setField("file_path", e.target.value)} required /></div>
-          <div><label className={label}>Extensão</label><input className={input} value={values.file_extension} onChange={(e)=>setField("file_extension", e.target.value)} placeholder="pdf, xlsx, docx..." /></div>
-          <div><label className={label}>Mime type</label><input className={input} value={values.mime_type} onChange={(e)=>setField("mime_type", e.target.value)} placeholder="application/pdf" /></div>
-          <div><label className={label}>Tamanho (bytes)</label><input type="number" className={input} value={values.file_size_bytes} onChange={(e)=>setField("file_size_bytes", e.target.value)} /></div>
-          <div><label className={label}>Versão</label><input type="number" className={input} value={values.version_no} onChange={(e)=>setField("version_no", e.target.value)} /></div>
-          <div><label className={label}>Tipo relacionado</label><input className={input} value={values.related_entity_type} onChange={(e)=>setField("related_entity_type", e.target.value)} /></div>
-          <div><label className={label}>ID relacionado</label><input className={input} value={values.related_entity_id} onChange={(e)=>setField("related_entity_id", e.target.value)} placeholder={projectId} /></div>
+          <div>
+            <label className={label}>Categoria</label>
+            <input
+              className={input}
+              value={values.category}
+              onChange={(e) => setField("category", e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={label}>Título</label>
+            <input
+              className={input}
+              value={values.title}
+              onChange={(e) => setField("title", e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={label}>Nome do arquivo</label>
+            <input
+              className={input}
+              value={values.file_name}
+              onChange={(e) => setField("file_name", e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={label}>Caminho / Storage path</label>
+            <input
+              className={input}
+              value={values.file_path}
+              onChange={(e) => setField("file_path", e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={label}>Extensão</label>
+            <input
+              className={input}
+              value={values.file_extension}
+              onChange={(e) => setField("file_extension", e.target.value)}
+              placeholder="pdf, xlsx, docx..."
+            />
+          </div>
+
+          <div>
+            <label className={label}>Mime type</label>
+            <input
+              className={input}
+              value={values.mime_type}
+              onChange={(e) => setField("mime_type", e.target.value)}
+              placeholder="application/pdf"
+            />
+          </div>
+
+          <div>
+            <label className={label}>Tamanho (bytes)</label>
+            <input
+              type="number"
+              className={input}
+              value={values.file_size_bytes}
+              onChange={(e) => setField("file_size_bytes", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className={label}>Versão</label>
+            <input
+              type="number"
+              className={input}
+              value={values.version_no}
+              onChange={(e) => setField("version_no", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className={label}>Tipo relacionado</label>
+            <input
+              className={input}
+              value={values.related_entity_type}
+              onChange={(e) => setField("related_entity_type", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className={label}>ID relacionado</label>
+            <input
+              className={input}
+              value={values.related_entity_id}
+              onChange={(e) => setField("related_entity_id", e.target.value)}
+              placeholder={projectId}
+            />
+          </div>
         </div>
 
         <label className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm">
-          <input type="checkbox" checked={values.is_public} onChange={(e)=>setField("is_public", e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={values.is_public}
+            onChange={(e) => setField("is_public", e.target.checked)}
+          />
           Disponibilizar este documento no portal do morador
         </label>
 
-        {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+        {error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <button type="submit" disabled={saving} className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+          >
             {saving ? "Salvando..." : "Salvar documento"}
           </button>
-          <button type="button" onClick={() => history.back()} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium">
+
+          <button
+            type="button"
+            onClick={() => history.back()}
+            className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium"
+          >
             Voltar
           </button>
         </div>
