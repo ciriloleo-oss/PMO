@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selecionar Operador</title>
+
+<style>
+:root{
+  --green:#0f6a53;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(180deg,#f4f7f3 0%,#e8efeb 100%);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.splash{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(180deg,#0f5b49,#0c4a3b);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  transition:opacity .45s ease, visibility .45s ease;
+}
+.splash.hide{opacity:0;visibility:hidden}
+.splash img{width:min(62vw,260px);filter:drop-shadow(0 10px 26px rgba(0,0,0,.22));animation:pulse 1.1s ease-in-out infinite alternate}
+@keyframes pulse{from{transform:scale(.96)}to{transform:scale(1)}}
+.card{
+  background:#fff;
+  padding:24px;
+  border-radius:22px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.08);
+  width:min(92vw,360px);
+  text-align:center;
+  border:1px solid rgba(15,106,83,.08);
+}
+.logo-select{margin-bottom:14px}
+.logo-select img{width:min(58vw,220px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 8px 22px rgba(0,0,0,.12))}
+h1{
+  font-size:20px;
+  margin:0 0 10px;
+  color:#173a34;
+}
+.subtitle{
+  font-size:13px;
+  color:#666;
+  margin-bottom:15px;
+}
+select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #ccc;
+  margin-top:10px;
+  font-size:15px;
+}
+button{
+  margin-top:18px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:var(--green);
+  color:#fff;
+  font-weight:bold;
+  font-size:15px;
+  box-shadow:0 8px 18px rgba(15,106,83,.18);
+}
+button:active{transform:translateY(1px)}
+</style>
+</head>
+
+<body>
+
+<div class="splash" id="splash">
+  <img src="manutAARS_512.png" alt="Manutenção AARS">
+</div>
+
+<div class="card">
+  <div class="logo-select"><img src="manutAARS_512.png" alt="Manutenção AARS"></div>
+  <h1>Selecione o operador</h1>
+  <div class="subtitle">Selecione o operador</div>
+
+  <select id="user"><option value="">Carregando usuários...</option></select>
+
+  <button onclick="entrar()">Entrar</button>
+</div>
+
+<script>
+function entrar(){
+  const user = document.getElementById('user').value;
+
+  if(!user){
+    alert('Selecione um operador');
+    return;
+  }
+
+  localStorage.setItem('operador', user);
+
+  window.location.href = 'manut_oper_app.html';
+}
+
+function hideSplash(){
+  const splash = document.getElementById('splash');
+  if(splash){
+    setTimeout(() => splash.classList.add('hide'), 650);
+  }
+}
+
+window.onload = () => {
+  hideSplash();
+  const user = localStorage.getItem('operador');
+  if(user){
+    setTimeout(() => {
+      window.location.href = 'manut_oper_app.html';
+    }, 700);
+  }
+}
+</script>
+
+
+<script>
+const SUPABASE_URL = 'https://brzmcjtlktyfmgkjfzvl.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyem1janRsa3R5Zm1na2pmenZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTUzMDMsImV4cCI6MjA4OTA5MTMwM30.XTOsD4anMb0gq1IANwvzAuQvHCYrY53Z975C8yLTTtc';
+
+function optionHeaders(){
+  return {
+    'apikey': SUPABASE_ANON,
+    'Authorization': 'Bearer ' + SUPABASE_ANON
+  };
+}
+
+function normalizeOptionKey(value){
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function uniquePretty(arr){
+  const map = new Map();
+  (arr || []).forEach(item => {
+    const raw = String(item || '').replace(/\s+/g, ' ').trim();
+    if(!raw) return;
+    const key = normalizeOptionKey(raw);
+    if(!map.has(key)){
+      map.set(key, raw);
+      return;
+    }
+    const current = map.get(key);
+    const score = (text) => {
+      let s = 0;
+      if(/[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]/.test(text)) s += 1;
+      if(/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]/.test(text)) s += 1;
+      if(text.length >= current.length) s += 0.2;
+      return s;
+    };
+    if(score(raw) > score(current)) map.set(key, raw);
+  });
+  return [...map.values()].sort((a,b) => a.localeCompare(b, 'pt-BR'));
+}
+
+async function loadUsers(){
+  const select = document.getElementById('user');
+  try{
+    const r = await fetch(
+      SUPABASE_URL + '/rest/v1/app_settings_options?select=setting_value,sort_order&setting_type=eq.usuario&is_active=eq.true&order=sort_order.asc,setting_value.asc',
+      { headers: optionHeaders() }
+    );
+    if(!r.ok) throw new Error(await r.text());
+    const rows = await r.json();
+    const users = uniquePretty(rows.map(x => x.setting_value));
+
+    if(!users.length) throw new Error('Nenhum usuário ativo encontrado.');
+
+    select.innerHTML = '<option value="">Escolha</option>' + users.map(name => `<option>${name}</option>`).join('');
+    const saved = localStorage.getItem('operador') || '';
+    if(saved) select.value = users.includes(saved) ? saved : '';
+  }catch(err){
+    select.innerHTML = `
+      <option value="">Escolha</option>
+      <option>Associado</option>
+      <option>Bronzeri</option>
+      <option>Diogo</option>
+      <option>Leonardo</option>
+      <option>Natanael</option>
+      <option>Reginaldo</option>
+      <option>Segurança</option>
+    `;
+  }
+}
+
+window.addEventListener('load', loadUsers);
+</script>
+
+</body>
+</html>

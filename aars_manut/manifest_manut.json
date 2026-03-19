@@ -1,0 +1,14 @@
+{
+  "name": "Manutenção AARS",
+  "short_name": "Manut AARS",
+  "start_url": "./manut_oper.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f6a53",
+  "theme_color": "#0f6a53",
+  "description": "Sistema operacional de manutenção da Reserva da Serra.",
+  "icons": [
+    {"src": "manutAARS_192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "manutAARS_512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

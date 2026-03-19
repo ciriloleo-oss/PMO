@@ -2,14 +2,34 @@ import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { GanttBoard } from "@/components/gantt-board";
 import { supabase } from "@/lib/supabase";
+import type { Database } from "@/types/database";
+
+type ProjectRow = Pick<
+  Database["public"]["Tables"]["projects"]["Row"],
+  | "id"
+  | "code"
+  | "name"
+  | "status"
+  | "physical_progress"
+  | "planned_start_date"
+  | "planned_end_date"
+  | "visibility"
+>;
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function GanttPage() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("projects")
-    .select("*")
-    .order("planned_start_date");
+    .select("id, code, name, status, physical_progress, planned_start_date, planned_end_date, visibility")
+    .order("planned_start_date", { ascending: true });
 
-  const projects = data ?? [];
+  if (error) {
+    throw new Error(`Erro ao carregar Gantt: ${error.message}`);
+  }
+
+  const projects: ProjectRow[] = data ?? [];
 
   return (
     <AppShell>

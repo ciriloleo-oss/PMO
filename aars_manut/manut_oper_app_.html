@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="manifest" href="manifest_manut.json">
+<meta name="theme-color" content="#0f6a53">
+<title>manut_oper_app</title>
+<style>
+:root{
+  --bg:#f4f7f3; --card:#fff; --muted:#5f746d; --text:#183a34; --line:#d9e2dd;
+  --green:#0f6a53; --green-2:#0c5643; --gold:#d4a61d; --red:#b33d3d; --yellow:#8a5a00;
+  --ok:#eaf7f0; --warn:#fff4cc; --danger:#fff1f1; --shadow:0 8px 18px rgba(22,59,53,.08); --r:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:10px 10px 74px}
+.top{position:sticky;top:0;z-index:20;background:rgba(244,247,243,.96);backdrop-filter:blur(8px);padding-bottom:8px}
+.brand{background:linear-gradient(180deg,#0f5b49,#0c4a3b);color:#fff;border-radius:20px;padding:12px;box-shadow:var(--shadow);border:2px solid rgba(212,166,29,.38)}
+.brand-inner{display:grid;grid-template-columns:76px 1fr 76px;gap:8px;align-items:center}
+.brand img{max-width:72px;max-height:46px;width:auto;height:auto;display:block}
+.brand .logo-wrap.right{display:flex;justify-content:flex-end}
+.title{font-size:1rem;font-weight:800;text-align:center}
+.subtitle{font-size:.75rem;opacity:.9;text-align:center;margin-top:2px}
+.install-wrap{display:flex;justify-content:center;margin-top:8px}
+.install-btn{background:#d4a61d;color:#183a34;border:1px solid rgba(0,0,0,.08);display:none}
+.install-btn.show{display:inline-flex}
+.banner{display:none;border-radius:14px;padding:12px 14px;font-weight:700;margin-top:8px}
+.banner.show{display:block}
+.banner.ok{background:var(--ok);color:#0d6a45;border:1px solid #8ed3ad}
+.banner.err{background:var(--danger);color:#a12424;border:1px solid #efb1b1}
+.banner.warn{background:var(--warn);color:#8a5a00;border:1px solid #efcf81}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;margin-top:10px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pill{border:1px solid var(--line);border-radius:15px;padding:9px;background:#f8faf8;text-align:center}
+.pill .n{font-size:1rem;font-weight:800}
+.pill .l{font-size:.7rem;color:var(--muted);margin-top:4px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#edf5f1;border:1px solid var(--line);font-size:.77rem;font-weight:800;color:var(--green)}
+.tag.ok{background:var(--ok);border-color:#8ed3ad;color:#0d6a45}
+.tag.warn{background:var(--warn);border-color:#efcf81;color:#8a5a00}
+.tag.err{background:var(--danger);border-color:#efb1b1;color:#a12424}
+.toolbar{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+.btn{border:0;border-radius:14px;padding:12px 14px;background:var(--green);color:#fff;font-weight:800;box-shadow:var(--shadow)}
+.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:none}
+.btn.danger{background:#fff1f1;color:#a12424;border:1px solid #efb1b1;box-shadow:none}
+.h2{margin:0 0 8px;font-size:1rem;font-weight:800}
+.small{font-size:.78rem;color:var(--muted)}
+.segment{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.segment button{border:1px solid var(--line);background:#fff;color:var(--text);padding:10px 12px;border-radius:12px;font-weight:800}
+.segment button.active{background:#0f6a53;color:#fff;border-color:#0f6a53}
+.field{margin-top:8px}
+.field label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);margin:0 0 4px}
+.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;color:var(--text)}
+.field textarea{min-height:88px;resize:vertical}
+.os-list{display:grid;gap:10px}
+.os-card{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
+.os-card.alert{background:#fff4cc}
+.os-card.urgent{background:#fff1f1}
+.os-head{display:flex;justify-content:space-between;gap:8px}
+.os-num{font-weight:800}
+.os-title{font-weight:800;margin-top:3px}
+.os-meta{font-size:.8rem;color:var(--muted);line-height:1.45;margin-top:6px}
+.os-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.os-actions-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.edit-panel.hidden,.new-panel.hidden{display:none}
+.fixed-actions{position:fixed;left:0;right:0;bottom:0;background:rgba(244,247,243,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.fixed-actions button{padding:12px 10px}
+.operator-line{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px;flex-wrap:wrap}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">
+      <div class="brand-inner">
+        <div class="logo-wrap"><img src="reserva.png" alt="Reserva da Serra"></div>
+        <div>
+          <div class="title">MANUTENÇÃO MOBILE</div>
+          <div class="subtitle">Campo • somente OS liberadas</div>
+        </div>
+        <div class="logo-wrap right"><img src="FeF.png" alt="F&F Serviços"></div>
+      </div>
+    </div>
+    <div id="banner" class="banner"></div>
+    <div class="install-wrap"><button id="installBtn" class="btn install-btn" type="button">Instalar app</button></div>
+  </div>
+
+  <div class="card">
+    <div class="summary">
+      <div class="pill"><div class="n" id="sumLiberadas">0</div><div class="l">Liberadas</div></div>
+      <div class="pill"><div class="n" id="sumUrgente">0</div><div class="l">Urgentes</div></div>
+      <div class="pill"><div class="n" id="sumSemResp">0</div><div class="l">Sem responsável</div></div>
+      <div class="pill"><div class="n" id="sumTriagem">0</div><div class="l">Triagem</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="tag">Sync: <span id="syncText">-</span></div>
+    </div>
+
+    <div class="operator-line">
+      <div class="tag">Operador: <span id="operadorLogado">-</span></div>
+      <button class="btn secondary" type="button" onclick="trocarOperador()">Trocar operador</button>
+    </div>
+
+    <div class="field hidden">
+      <label>Operador</label>
+      <select id="operatorFilter" onchange="renderList()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Buscar</label>
+      <input id="searchFilter" placeholder="OS, título ou setor" oninput="renderList()">
+    </div>
+
+    <div class="segment">
+      <button id="tabFila" class="active" onclick="setTab('fila')">Fila</button>
+      <button id="tabMinhas" onclick="setTab('minhas')">Minhas</button>
+      <button id="tabSemResp" onclick="setTab('semresp')">Sem resp.</button>
+    </div>
+
+    <div class="small" style="margin-top:8px">Triagem não aparece aqui. Vermelho = urgente. Amarelo = sem responsável.</div>
+  </div>
+
+  <div class="card">
+    <div class="h2">Fila operacional</div>
+    <div id="mobileList" class="os-list"></div>
+  </div>
+
+  <div class="card edit-panel hidden" id="editWrap">
+    <div class="h2">Atualizar OS</div>
+    <div class="field"><label>Número</label><input id="edit_order_number" readonly></div>
+    <div class="field"><label>Categoria</label>
+      <select id="edit_category"></select>
+    </div>
+    <div class="field"><label>Prioridade</label>
+      <select id="edit_priority"></select>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="edit_status"></select>
+    </div>
+    <div class="field"><label>Solicitante</label>
+      <select id="edit_requester_type"></select>
+    </div>
+    <div class="field"><label>Responsável</label>
+      <select id="edit_assigned_to"></select>
+    </div>
+    <div class="field"><label>Usuário da ação</label><input id="edit_actor" placeholder="Seu nome"></div>
+    <div class="field"><label>Nota</label><textarea id="edit_note" placeholder="Observação da atualização"></textarea></div>
+    <div class="field"><label>Foto depois</label><input id="edit_after_photo" type="file" accept="image/*"></div>
+    <div class="os-actions">
+      <button class="btn" onclick="updateOrder()">Salvar</button>
+      <button class="btn secondary" onclick="closeEdit()">Fechar</button>
+    </div>
+  </div>
+
+  <div class="card new-panel hidden" id="newWrap">
+    <div class="h2">Abrir OS manual</div>
+    <form id="newForm">
+      <div class="field"><label>Título *</label><input id="title" placeholder="Problema encontrado"></div>
+      <div class="field"><label>Setor *</label><select id="sector"></select></div>
+      <div class="field"><label>Descrição *</label><textarea id="description" placeholder="Descreva rapidamente"></textarea></div>
+      <div class="field"><label>Categoria</label>
+        <select id="category"></select>
+      </div>
+      <div class="field"><label>Prioridade</label>
+        <select id="priority"></select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="status"></select>
+      </div>
+      <div class="field"><label>Solicitante</label>
+        <select id="requester_type"></select>
+      </div>
+      <div class="field"><label>Responsável</label>
+        <select id="assigned_to"></select>
+      </div>
+      <div class="field"><label>Usuário da ação</label><input id="actor" placeholder="Seu nome"></div>
+      <div class="field"><label>Foto antes</label><input id="before_photo" type="file" accept="image/*"></div>
+      <div class="os-actions">
+        <button type="button" class="btn" onclick="createOrder()">Salvar</button>
+        <button type="button" class="btn secondary" onclick="toggleNewPanel()">Fechar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="fixed-actions">
+  <button class="btn secondary" onclick="loadOrders()">Atualizar</button>
+  <button class="btn" onclick="toggleNewPanel()">Nova OS</button>
+  <button class="btn secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">Topo</button>
+</div>
+
+
+<script>
+let ordersCache = [];
+let currentEdit = null;
+let activeTab = 'fila';
+let deferredPrompt = null;
+let settingsOptions = { area: [], usuario: [], categoria: [], prioridade: [], status: [] };
+
+const SUPABASE_URL = 'https://brzmcjtlktyfmgkjfzvl.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyem1janRsa3R5Zm1na2pmenZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTUzMDMsImV4cCI6MjA4OTA5MTMwM30.XTOsD4anMb0gq1IANwvzAuQvHCYrY53Z975C8yLTTtc';
+
+function headers(){
+  return {
+    'apikey': SUPABASE_ANON,
+    'Authorization': 'Bearer ' + SUPABASE_ANON,
+    'Content-Type': 'application/json'
+  };
+}
+
+function baseUrl(){
+  return SUPABASE_URL;
+}
+
+function getOperadorLogado(){
+  return localStorage.getItem('operador') || '';
+}
+
+
+function uiStatusFromStored(value){
+  const s = String(value || '').toLowerCase().trim();
+  const map = {
+    'triagem':'Triagem',
+    'aberta':'Aberta',
+    'em análise':'Em análise',
+    'em analise':'Em análise',
+    'em execução':'Em execução',
+    'em execucao':'Em execução',
+    'on hold':'On hold',
+    'concluída':'Concluída',
+    'concluida':'Concluída',
+    'cancelada':'Cancelada'
+  };
+  return map[s] || String(value || '');
+}
+
+function fillSelect(selectId, values, config={}){
+  const el = document.getElementById(selectId);
+  if(!el) return;
+  const { includeBlank = false, blankLabel = 'Escolha', selected = null, mapper = (v) => v } = config;
+  const currentValue = selected !== null ? selected : el.value;
+  const options = [];
+  if(includeBlank) options.push(`<option value="">${blankLabel}</option>`);
+  values.forEach(v => {
+    const safe = String(v ?? '').replace(/"/g, '&quot;');
+    options.push(`<option value="${safe}">${mapper(v)}</option>`);
+  });
+  el.innerHTML = options.join('');
+  if(currentValue !== null && currentValue !== undefined && currentValue !== '') el.value = currentValue;
+}
+
+function normalizeOptionKey(value){
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function uniqueSorted(arr){
+  const map = new Map();
+
+  (arr || []).forEach(item => {
+    const raw = String(item || '').replace(/\s+/g, ' ').trim();
+    if(!raw) return;
+
+    const key = normalizeOptionKey(raw);
+    if(!map.has(key)){
+      map.set(key, raw);
+      return;
+    }
+
+    const current = map.get(key);
+
+    const score = (text) => {
+      let s = 0;
+      if(/[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]/.test(text)) s += 1;
+      if(/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]/.test(text)) s += 1;
+      if(text.length >= current.length) s += 0.2;
+      return s;
+    };
+
+    if(score(raw) > score(current)){
+      map.set(key, raw);
+    }
+  });
+
+  return [...map.values()].sort((a,b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function applySettingsToForm(){
+  const operadores = settingsOptions.usuario.length ? settingsOptions.usuario : uniqueSorted(['Diogo','Natanael','Reginaldo','Bronzeri','Associado','Leonardo','Segurança']);
+  const areas = settingsOptions.area.length ? settingsOptions.area : uniqueSorted(['Portaria']);
+  const categorias = settingsOptions.categoria.length ? settingsOptions.categoria : uniqueSorted(['Elétrica','Hidráulica','Jardinagem','Civil','Pintura','Limpeza','Iluminação','Sinalização','Outros']);
+  const prioridades = settingsOptions.prioridade.length ? settingsOptions.prioridade : uniqueSorted(['Baixa','Normal','Alta','Urgente']);
+  const statusOperacionais = settingsOptions.status.length ? settingsOptions.status : ['Aberta','Em análise','Em execução','On hold','Concluída','Cancelada'];
+
+  fillSelect('operatorFilter', operadores, { includeBlank:true, blankLabel:'Todos' });
+  fillSelect('edit_assigned_to', operadores, { includeBlank:true, blankLabel:'Não atribuído' });
+  fillSelect('assigned_to', operadores, { includeBlank:true, blankLabel:'Não atribuído' });
+  fillSelect('requester_type', operadores, { includeBlank:true, blankLabel:'Escolha' });
+  fillSelect('edit_requester_type', operadores, { includeBlank:true, blankLabel:'Escolha' });
+  fillSelect('sector', areas, { includeBlank:true, blankLabel:'Escolha' });
+  fillSelect('edit_category', categorias);
+  fillSelect('category', categorias);
+  fillSelect('edit_priority', prioridades);
+  fillSelect('priority', prioridades);
+  fillSelect('edit_status', statusOperacionais, { mapper: uiStatusFromStored });
+  fillSelect('status', statusOperacionais.filter(s => ['aberta','em análise','em analise'].includes(String(s).toLowerCase())), { mapper: uiStatusFromStored });
+
+  const operador = getOperadorLogado();
+  if(operador){
+    const operatorFilter = document.getElementById('operatorFilter');
+    if(operatorFilter) operatorFilter.value = operador;
+    const assignedTo = document.getElementById('assigned_to');
+    if(assignedTo && !assignedTo.value) assignedTo.value = operadores.includes(operador) ? operador : '';
+    const requesterType = document.getElementById('requester_type');
+    if(requesterType && !requesterType.value) requesterType.value = operadores.includes(operador) ? operador : '';
+    const editAssignedTo = document.getElementById('edit_assigned_to');
+    if(editAssignedTo && !editAssignedTo.value && operadores.includes(operador)) editAssignedTo.value = operador;
+  }
+
+  const defaultPriority = document.getElementById('priority');
+  if(defaultPriority && !defaultPriority.value && prioridades.includes('Normal')) defaultPriority.value = 'Normal';
+  const defaultStatus = document.getElementById('status');
+  if(defaultStatus && !defaultStatus.value) defaultStatus.value = statusOperacionais.includes('Aberta') ? 'Aberta' : (statusOperacionais[0] || '');
+}
+
+async function loadSettingsOptions(){
+  try{
+    const r = await fetch(baseUrl() + '/rest/v1/app_settings_options?select=setting_type,setting_value,sort_order,is_active&is_active=eq.true&order=setting_type.asc,sort_order.asc,setting_value.asc', { headers: headers() });
+    if(!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    settingsOptions = { area: [], usuario: [], categoria: [], prioridade: [], status: [] };
+    data.forEach(item => {
+      const type = String(item.setting_type || '').trim().toLowerCase();
+      const value = String(item.setting_value || '').trim();
+      if(settingsOptions[type] && value) settingsOptions[type].push(value);
+    });
+    Object.keys(settingsOptions).forEach(key => { settingsOptions[key] = uniqueSorted(settingsOptions[key]); });
+    applySettingsToForm();
+  }catch(err){
+    applySettingsToForm();
+    showBanner('Cadastros dinâmicos indisponíveis. Usando lista local.', 'warn');
+  }
+}
+
+
+function aplicarOperadorLogado(){
+  const operador = getOperadorLogado();
+
+  if(!operador){
+    window.location.href = 'manut_oper.html';
+    return;
+  }
+
+  const operatorFilter = document.getElementById('operatorFilter');
+  if(operatorFilter){
+    operatorFilter.value = operador;
+  }
+
+  const actor = document.getElementById('actor');
+  if(actor){
+    actor.value = operador;
+  }
+
+  const editActor = document.getElementById('edit_actor');
+  if(editActor){
+    editActor.value = operador;
+  }
+
+  const assignedTo = document.getElementById('assigned_to');
+  if(assignedTo && !assignedTo.value){
+    assignedTo.value = operador;
+  }
+
+  const operadorLabel = document.getElementById('operadorLogado');
+  if(operadorLabel){
+    operadorLabel.textContent = operador;
+  }
+}
+
+function trocarOperador(){
+  localStorage.removeItem('operador');
+  window.location.href = 'manut_oper.html';
+}
+
+function showBanner(text, type='ok'){
+  const el = document.getElementById('banner');
+  el.textContent = text;
+  el.className = 'banner show ' + (type === 'error' ? 'err' : type);
+  clearTimeout(window.__bannerTimer);
+  window.__bannerTimer = setTimeout(() => {
+    el.className = 'banner';
+  }, 3200);
+}
+
+
+function normalizeStatus(v){
+  const m = {
+    'Triagem':'triagem',
+    'Aberta':'aberta',
+    'Em análise':'em análise',
+    'Em execução':'em execução',
+    'On hold':'on hold',
+    'Concluída':'concluída',
+    'Cancelada':'cancelada'
+  };
+  return m[v] || String(v || '').toLowerCase();
+}
+
+function formatDate(v){
+  return v ? new Date(v).toLocaleString('pt-BR') : '-';
+}
+
+function setupPWAInstall(){
+  const btn = document.getElementById('installBtn');
+  if(!btn) return;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    btn.classList.add('show');
+  });
+
+  btn.addEventListener('click', async () => {
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if(result && result.outcome === 'accepted'){
+      btn.classList.remove('show');
+      showBanner('App instalado com sucesso.','ok');
+    }
+    deferredPrompt = null;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    btn.classList.remove('show');
+    showBanner('Aplicativo instalado.','ok');
+  });
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker-manut.js').catch(err => console.warn(err));
+  }
+}
+
+async function testConnection(){
+  try{
+    const r = await fetch(baseUrl() + '/rest/v1/maintenance_orders?select=id&limit=1', {
+      headers: headers()
+    });
+    if(!r.ok) throw new Error(await r.text());
+
+    await loadOrders();
+  }catch(err){
+    showBanner('Falha na conexão: ' + err.message, 'error');
+  }
+}
+
+function updateSummary(){
+  const liberadas = ordersCache.filter(x => !['triagem','concluída','concluida','cancelada'].includes(String(x.status||'').toLowerCase())).length;
+  const triagem = ordersCache.filter(x => String(x.status||'').toLowerCase()==='triagem').length;
+  const urgentes = ordersCache.filter(x => String(x.priority||'').toLowerCase()==='urgente' && !['concluída','concluida','cancelada'].includes(String(x.status||'').toLowerCase())).length;
+  const semResp = ordersCache.filter(x => !x.assigned_to && !['concluída','concluida','cancelada','triagem'].includes(String(x.status||'').toLowerCase())).length;
+
+  document.getElementById('sumLiberadas').textContent = liberadas;
+  document.getElementById('sumTriagem').textContent = triagem;
+  document.getElementById('sumUrgente').textContent = urgentes;
+  document.getElementById('sumSemResp').textContent = semResp;
+}
+
+async function loadOrders(){
+  try{
+    const r = await fetch(baseUrl() + '/rest/v1/maintenance_orders?select=*&order=opened_at.desc&limit=150', {
+      headers: headers()
+    });
+    if(!r.ok) throw new Error(await r.text());
+
+    ordersCache = await r.json();
+    updateSummary();
+    renderList();
+    document.getElementById('syncText').textContent = new Date().toLocaleTimeString('pt-BR');
+  }catch(err){
+    showBanner('Falha ao carregar OS: ' + err.message, 'error');
+  }
+}
+
+function filteredRows(){
+  const operator = document.getElementById('operatorFilter').value;
+  const search = document.getElementById('searchFilter').value.trim().toLowerCase();
+  let rows = [...ordersCache];
+
+  rows = rows.filter(r => !['triagem','concluída','concluida','cancelada'].includes(String(r.status||'').toLowerCase()));
+
+  if(activeTab === 'minhas'){
+    rows = rows.filter(r => (r.assigned_to || '') === operator);
+  } else if(activeTab === 'semresp'){
+    rows = rows.filter(r => !r.assigned_to);
+  }
+
+  if(search){
+    rows = rows.filter(r =>
+      [r.title, r.sector, r.os_number, r.order_number].join(' ').toLowerCase().includes(search)
+    );
+  }
+
+  rows.sort((a,b) => {
+    const score = r => {
+      const p = String(r.priority||'').toLowerCase();
+      if(p === 'urgente') return 0;
+      if(p === 'alta') return 1;
+      if(!r.assigned_to) return 2;
+      return 3;
+    };
+    return score(a) - score(b);
+  });
+
+  return rows;
+}
+
+function calcSla(dueAt){
+  const diff = new Date(dueAt) - new Date();
+  const hours = diff / 36e5;
+  if(hours < 0) return 'Atrasada';
+  if(hours < 24) return Math.round(hours) + 'h';
+  return Math.ceil(hours/24) + 'd';
+}
+
+function renderList(){
+  const list = document.getElementById('mobileList');
+  list.innerHTML = '';
+
+  const rows = filteredRows();
+
+  if(!rows.length){
+    list.innerHTML = '<div class="card"><div class="small">Nenhuma OS liberada para este filtro.</div></div>';
+    return;
+  }
+
+  rows.forEach(row => {
+    const card = document.createElement('div');
+    const p = String(row.priority||'').toLowerCase();
+    const cls = p === 'urgente' ? 'os-card urgent' : (!row.assigned_to ? 'os-card alert' : 'os-card');
+    card.className = cls;
+
+    const quickLabel = row.assigned_to ? 'Concluir' : 'Assumir';
+    const quickFn = row.assigned_to ? `quickComplete('${row.id}')` : `quickAssign('${row.id}')`;
+    const sla = row.due_at ? calcSla(row.due_at) : 'Sem SLA';
+
+    card.innerHTML = `
+      <div class="os-head">
+        <div>
+          <div class="os-num">${row.os_number || row.order_number || '-'}</div>
+          <div class="os-title">${row.title || '-'}</div>
+        </div>
+        <div class="tag ${p === 'urgente' ? 'err' : (!row.assigned_to ? 'warn' : '')}">${row.priority || '-'}</div>
+      </div>
+      <div class="os-meta">
+        <div><strong>Setor:</strong> ${row.sector || '-'}</div>
+        <div><strong>Status:</strong> ${row.status || '-'} | <strong>SLA:</strong> ${sla}</div>
+        <div><strong>Responsável:</strong> ${row.assigned_to || 'Não atribuído'}</div>
+      </div>
+      <div class="os-actions-3">
+        <button class="btn secondary" onclick="openEdit('${row.id}')">Abrir</button>
+        <button class="btn" onclick="${quickFn}">${quickLabel}</button>
+        <button class="btn secondary" onclick="quickExecute('${row.id}')">Executar</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function setTab(tab){
+  activeTab = tab;
+  document.getElementById('tabFila').className = tab === 'fila' ? 'active' : '';
+  document.getElementById('tabMinhas').className = tab === 'minhas' ? 'active' : '';
+  document.getElementById('tabSemResp').className = tab === 'semresp' ? 'active' : '';
+  renderList();
+}
+
+function openEdit(id){
+  const row = ordersCache.find(x => x.id === id);
+  if(!row) return;
+
+  currentEdit = row;
+  document.getElementById('editWrap').classList.remove('hidden');
+  document.getElementById('edit_order_number').value = row.os_number || row.order_number || '';
+  document.getElementById('edit_category').value = row.category || '';
+  document.getElementById('edit_priority').value = row.priority ? (row.priority.charAt(0).toUpperCase()+row.priority.slice(1)) : 'Normal';
+  document.getElementById('edit_status').value = mapStatusToUi(row.status);
+  document.getElementById('edit_requester_type').value = row.requester_type || row.requester_role || '';
+  document.getElementById('edit_assigned_to').value = row.assigned_to || '';
+  document.getElementById('edit_actor').value = getOperadorLogado();
+  document.getElementById('edit_note').value = '';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function mapStatusToUi(status){
+  const s = String(status||'').toLowerCase();
+  if(s === 'aberta') return 'Aberta';
+  if(s === 'em análise' || s === 'em analise') return 'Em análise';
+  if(s === 'em execução' || s === 'em execucao') return 'Em execução';
+  if(s === 'on hold') return 'On hold';
+  if(s === 'concluída' || s === 'concluida') return 'Concluída';
+  if(s === 'cancelada') return 'Cancelada';
+  return 'Aberta';
+}
+
+function closeEdit(){
+  currentEdit = null;
+  document.getElementById('editWrap').classList.add('hidden');
+}
+
+async function insertHistory(orderId, previousStatus, newStatus, note, actor){
+  const resp = await fetch(baseUrl() + '/rest/v1/maintenance_order_history', {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify([{
+      order_id: orderId,
+      previous_status: previousStatus || null,
+      new_status: newStatus,
+      note: note || null,
+      changed_by: actor || null
+    }])
+  });
+  if(!resp.ok) throw new Error(await resp.text());
+}
+
+async function uploadPhoto(file, orderId, photoType, actor){
+  if(!file) return;
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${orderId}/${photoType}_${Date.now()}.${ext}`;
+
+  const uploadResp = await fetch(baseUrl() + '/storage/v1/object/maintenance-photos/' + path, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': 'Bearer ' + SUPABASE_ANON,
+      'x-upsert': 'true',
+      'Content-Type': file.type || 'application/octet-stream'
+    },
+    body: file
+  });
+  if(!uploadResp.ok) throw new Error(await uploadResp.text());
+
+  const metaResp = await fetch(baseUrl() + '/rest/v1/maintenance_order_photos', {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify([{
+      order_id: orderId,
+      photo_type: photoType,
+      storage_path: path,
+      file_name: file.name,
+      content_type: file.type || null,
+      uploaded_by: actor || null
+    }])
+  });
+  if(!metaResp.ok) throw new Error(await metaResp.text());
+}
+
+async function patchOrder(id, patch, note){
+  const current = ordersCache.find(x => x.id === id);
+
+  const r = await fetch(baseUrl() + '/rest/v1/maintenance_orders?id=eq.' + id + '&select=*', {
+    method: 'PATCH',
+    headers: {...headers(), 'Prefer':'return=representation'},
+    body: JSON.stringify(patch)
+  });
+  if(!r.ok) throw new Error(await r.text());
+
+  const updated = (await r.json())[0];
+
+  try{
+    await insertHistory(
+      id,
+      current ? String(current.status || '').toLowerCase() : null,
+      patch.status || (current ? current.status : null),
+      note,
+      patch.updated_by || null
+    );
+  }catch(e){}
+
+  return updated;
+}
+
+async function quickAssign(id){
+  const operador = getOperadorLogado();
+  if(!operador) return showBanner('Operador não identificado.','warn');
+
+  try{
+    const updated = await patchOrder(
+      id,
+      { assigned_to: operador, status:'aberta', updated_by: operador },
+      'OS assumida pelo operador'
+    );
+    showBanner(`OS ${updated.os_number || updated.order_number || ''} assumida.`, 'ok');
+    await loadOrders();
+  }catch(err){
+    showBanner('Falha ao assumir OS: ' + err.message, 'error');
+  }
+}
+
+async function quickExecute(id){
+  const operador = getOperadorLogado();
+  if(!operador) return showBanner('Operador não identificado.','warn');
+
+  try{
+    const updated = await patchOrder(
+      id,
+      { assigned_to: operador, status:'em execução', updated_by: operador },
+      'OS enviada para execução'
+    );
+    showBanner(`OS ${updated.os_number || updated.order_number || ''} em execução.`, 'ok');
+    await loadOrders();
+  }catch(err){
+    showBanner('Falha ao atualizar OS: ' + err.message, 'error');
+  }
+}
+
+async function quickComplete(id){
+  openEdit(id);
+  document.getElementById('edit_status').value = 'Concluída';
+}
+
+async function updateOrder(){
+  if(!currentEdit) return;
+
+  try{
+    const patch = {
+      category: document.getElementById('edit_category').value,
+      priority: (document.getElementById('edit_priority').value || '').toLowerCase(),
+      status: normalizeStatus(document.getElementById('edit_status').value),
+      requester_type: document.getElementById('edit_requester_type').value || null,
+      requester_role: document.getElementById('edit_requester_type').value || null,
+      assigned_to: document.getElementById('edit_assigned_to').value || null,
+      updated_by: getOperadorLogado()
+    };
+
+    const updated = await patchOrder(
+      currentEdit.id,
+      patch,
+      document.getElementById('edit_note').value.trim() || 'OS atualizada'
+    );
+
+    await uploadPhoto(
+      document.getElementById('edit_after_photo').files[0],
+      currentEdit.id,
+      'after',
+      patch.updated_by
+    );
+
+    showBanner(`OS ${updated.os_number || updated.order_number || ''} atualizada.`, 'ok');
+    closeEdit();
+    await loadOrders();
+  }catch(err){
+    showBanner('Falha ao atualizar a OS: ' + err.message, 'error');
+  }
+}
+
+function toggleNewPanel(){
+  const panel = document.getElementById('newWrap');
+  panel.classList.toggle('hidden');
+
+  const operador = getOperadorLogado();
+  document.getElementById('actor').value = operador;
+  if(!document.getElementById('assigned_to').value){
+    document.getElementById('assigned_to').value = operador;
+  }
+
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
+async function createOrder(){
+  const requester = document.getElementById('requester_type').value;
+  const operador = getOperadorLogado();
+
+  const payload = {
+    category: document.getElementById('category').value,
+    title: document.getElementById('title').value.trim(),
+    description: document.getElementById('description').value.trim(),
+    status: normalizeStatus(document.getElementById('status').value),
+    priority: (document.getElementById('priority').value || '').toLowerCase(),
+    requester_type: requester,
+    requester_role: requester,
+    assigned_to: document.getElementById('assigned_to').value || operador || null,
+    sector: document.getElementById('sector').value.trim(),
+    created_by: operador || null,
+    updated_by: operador || null,
+    origin: 'manual'
+  };
+
+  if(!payload.title || !payload.description || !payload.sector){
+    return showBanner('Preencha título, descrição e setor.', 'error');
+  }
+
+  try{
+    const r = await fetch(baseUrl() + '/rest/v1/maintenance_orders?select=*', {
+      method:'POST',
+      headers:{...headers(), 'Prefer':'return=representation'},
+      body:JSON.stringify([payload])
+    });
+    if(!r.ok) throw new Error(await r.text());
+
+    const row = (await r.json())[0];
+
+    await uploadPhoto(
+      document.getElementById('before_photo').files[0],
+      row.id,
+      'before',
+      payload.created_by
+    );
+
+    showBanner(`OS ${row.os_number || row.order_number || ''} salva.`, 'ok');
+    document.getElementById('newForm').reset();
+    applySettingsToForm();
+    document.getElementById('status').value = 'Aberta';
+    document.getElementById('priority').value = 'Normal';
+    document.getElementById('newWrap').classList.add('hidden');
+    await loadOrders();
+  }catch(err){
+    showBanner('Falha ao salvar a OS: ' + err.message, 'error');
+  }
+}
+
+window.addEventListener('load', async () => {
+  await loadSettingsOptions();
+  aplicarOperadorLogado();
+  setupPWAInstall();
+  await testConnection();
+});
+</script>
+</body>
+</html>

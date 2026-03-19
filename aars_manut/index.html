@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manutenção Gerencial - v14</title>
+<style>
+:root{
+  --bg:#f4f7f3; --card:#fff; --muted:#5f746d; --text:#183a34; --line:#d9e2dd;
+  --green:#0f6a53; --green-2:#0c5643; --gold:#d4a61d; --red:#b33d3d; --yellow:#8a5a00;
+  --blue:#245f9c; --purple:#6d4dbb; --teal:#1f8f83;
+  --ok:#eaf7f0; --nok:#fff1f1; --shadow:0 10px 26px rgba(22,59,53,.08); --r:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1280px;margin:0 auto;padding:14px 14px 72px}
+.top{position:sticky;top:0;z-index:10;background:rgba(244,247,243,.96);backdrop-filter:blur(8px);padding-bottom:12px}
+.brand{background:linear-gradient(180deg,#0f5b49,#0c4a3b);color:#fff;border-radius:24px;padding:16px;box-shadow:var(--shadow);border:2px solid rgba(212,166,29,.38)}
+.brand-inner{display:grid;grid-template-columns:140px 1fr 140px;gap:8px;align-items:center}
+.brand .logo-wrap{display:flex;align-items:center}
+.brand .logo-wrap.right{justify-content:flex-end}
+.brand img{max-width:130px;max-height:72px;width:auto;height:auto;display:block}
+.brand-text{text-align:center}
+.title{font-size:1.18rem;font-weight:800;letter-spacing:.3px}
+.subtitle{font-size:.92rem;opacity:.9;margin-top:4px}
+.grid{display:grid;gap:14px;margin-top:14px;grid-template-columns:1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+.h2{margin:0 0 12px;font-size:1rem;font-weight:800}
+.meta{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.field label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);margin:0 0 4px}
+.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;color:var(--text);font-size:.9rem}
+.field textarea{min-height:88px;resize:vertical}
+.filters-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end}
+.filter-span-2{grid-column:span 2}
+.filter-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;grid-column:1 / -1}
+.toolbar{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+.toolbar.two{grid-template-columns:repeat(2,1fr)}
+.btn{border:0;border-radius:14px;padding:12px 14px;background:var(--green);color:#fff;font-weight:800;box-shadow:var(--shadow)}
+.btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:none}
+.btn.warn{background:var(--yellow)}
+.btn.danger{background:#fff1f1;color:#a12424;border:1px solid #efb1b1;box-shadow:none}
+.banner{display:none;border-radius:14px;padding:12px 14px;font-weight:700;margin-top:10px}
+.banner.show{display:block}
+.banner.ok{background:var(--ok);color:#0d6a45;border:1px solid #8ed3ad}
+.banner.err{background:#fff1f1;color:#a12424;border:1px solid #efb1b1}
+.banner.warn{background:#fff7e7;color:#8a5a00;border:1px solid #efcf81}
+.summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:10px 0 0}
+.pill{border:1px solid var(--line);border-radius:16px;padding:10px;background:#f8faf8;text-align:center;min-height:78px;display:flex;flex-direction:column;justify-content:center}
+.pill .n{font-size:1.18rem;font-weight:800}
+.pill .l{font-size:.74rem;color:var(--muted);margin-top:4px}
+.pill .sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.84rem;color:var(--muted);font-weight:800}
+.tag{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#edf5f1;border:1px solid var(--line);font-size:.8rem;font-weight:800;color:var(--green)}
+.tag.ok{background:var(--ok);border-color:#8ed3ad;color:#0d6a45}
+.tag.warn{background:#fff7e7;border-color:#efcf81;color:#8a5a00}
+.tag.err{background:#fff1f1;border-color:#efb1b1;color:#a12424}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.footer-status{position:fixed;left:0;right:0;bottom:0;background:rgba(244,247,243,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:8px 14px;text-align:center;font-size:.78rem;color:var(--muted)}
+.footer-status.ok{color:#0d6a45}
+.footer-status.err{color:#a12424}
+.panel-note{font-size:.82rem;color:var(--muted);margin-bottom:8px}
+.panel-alert{font-size:.82rem;color:#8a5a00;background:#fff7e7;border:1px solid #efcf81;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.photo-links a{color:var(--green-2);font-weight:700;text-decoration:none}
+.list-tight td,.list-tight th{padding:8px}
+.checklist-row td{background:#fff4cc}
+.checklist-row td:first-child{border-left:4px solid #d4a61d}
+.urgent-row td{background:#fff1f1}
+.urgent-row td:first-child{border-left:4px solid #b33d3d}
+.done-row td{background:#eaf7f0}
+.done-row td:first-child{border-left:4px solid #0d6a45}
+.origin-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid var(--line);font-size:.76rem;font-weight:800}
+.origin-badge.checklist{background:#fff4cc;border-color:#d4a61d;color:#8a5a00}
+.origin-badge.manual{background:#f8faf8;color:var(--muted)}
+.actions-inline{display:flex;gap:8px;flex-wrap:wrap}
+.dashboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.chart-card{border:1px solid var(--line);border-radius:16px;padding:10px;background:#fbfcfb}
+.chart-title{font-weight:800;font-size:.86rem;margin:0 0 6px}
+.chart-subtitle{font-size:.73rem;color:var(--muted);margin:0 0 8px}
+.chart-box{height:210px}
+canvas{max-height:210px}
+.kpi-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;align-items:start}
+.table-mini td,.table-mini th{padding:7px;font-size:.84rem}
+.code-box{background:#0f201c;color:#e8fff7;border-radius:14px;padding:12px;overflow:auto;font-size:.8rem;line-height:1.45}
+@media (max-width:1100px){
+  .filters-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .filter-span-2{grid-column:span 1}
+  .dashboard-grid{grid-template-columns:1fr 1fr}
+  .summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi-row{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .brand-inner{grid-template-columns:86px 1fr 86px}
+  .brand img{max-width:82px;max-height:52px}
+  .title{font-size:1rem}
+  .subtitle{font-size:.82rem}
+  .toolbar,.toolbar.two,.filter-actions,.dashboard-grid,.summary,.filters-grid{grid-template-columns:1fr}
+  .meta{grid-template-columns:1fr}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.completed-row {
+    background-color: #e6f7e6 !important;
+}
+.overdue-row {
+    background-color: #ffe6e6 !important;
+}
+.chart-container {
+    max-width: 400px;
+    margin: auto;
+}
+</style>
+<style id="v4-tweaks">
+  .filters-card, .filter-card, #filtersCard { order: -1; }
+  .completed-row, tr.completed-row td { background: #eaf8ea !important; }
+  .overdue-row, tr.overdue-row td { background: #fff1f1 !important; }
+  .chart-container, .chart-card canvas {
+    max-height: 260px !important;
+  }
+</style>
+
+
+<style id="daily-count-style">
+.daily-count-wrap{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:12px;
+  background:rgba(0,0,0,.02);
+}
+.daily-count-title{
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:8px;
+}
+.daily-count-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(88px,1fr));
+  gap:8px;
+}
+.daily-count-chip{
+  padding:8px 10px;
+  border-radius:10px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.06);
+  text-align:center;
+}
+.daily-count-chip .d{
+  display:block;
+  font-size:12px;
+  opacity:.75;
+  margin-bottom:2px;
+}
+.daily-count-chip .v{
+  display:block;
+  font-size:16px;
+  font-weight:700;
+}
+</style>
+
+
+<style id="final-monthly-daily-tweaks">
+  #chartMensal_REMOVIDO, #chartMensal_REMOVIDODiario { max-height: 220px !important; }
+</style>
+
+
+<style id="charts-reflow-fix">
+  .dashboard-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    align-items:start;
+  }
+  .chart-card{padding:9px}
+  .chart-title{font-size:.82rem;margin:0 0 4px}
+  .chart-subtitle{font-size:.71rem;margin:0 0 6px}
+  .chart-box{height:155px}
+  canvas{max-height:155px !important}
+  .monthly-stack{display:grid;gap:8px}
+  .mini-chart-block{
+    border:1px solid rgba(0,0,0,.06);
+    border-radius:12px;
+    padding:8px;
+    background:#fcfdfc;
+  }
+  .mini-chart-label{
+    font-size:.72rem;
+    font-weight:700;
+    color:#4b5d57;
+    margin:0 0 6px;
+  }
+  .mini-chart-box{height:115px}
+  #chartMensal_REMOVIDO,#chartMensal_REMOVIDODiario{max-height:115px !important}
+  @media (min-width:1200px){
+    .dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .chart-card.monthly-wide{grid-column:span 2}
+  }
+  @media (max-width:1100px){
+    .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:700px){
+    .dashboard-grid{grid-template-columns:1fr}
+    .chart-box{height:145px}
+    canvas{max-height:145px !important}
+    .mini-chart-box{height:110px}
+    #chartMensal_REMOVIDO,#chartMensal_REMOVIDODiario{max-height:110px !important}
+  }
+</style>
+
+
+<style id="layout-final-fix">
+  @media (min-width:1200px){
+    .dashboard-grid{
+      grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    }
+  }
+</style>
+
+
+<style id="typography-polish-v5">
+  :root{
+    --font-main: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  body{
+    font-family: var(--font-main) !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  .title{font-size:1.02rem !important;font-weight:800 !important;letter-spacing:.2px !important}
+  .subtitle{font-size:.84rem !important;margin-top:2px !important}
+  .h2{font-size:.98rem !important;font-weight:800 !important}
+  .chart-title{font-size:.80rem !important;font-weight:800 !important;line-height:1.2 !important}
+  .chart-subtitle{font-size:.69rem !important;line-height:1.25 !important;opacity:.82 !important}
+  .kpi-title,.kpi-label,.metric-label,.label{font-size:.70rem !important}
+  .kpi-value,.metric-value{font-size:1rem !important;font-weight:800 !important}
+  .filters-grid label,label{font-size:.73rem !important;font-weight:700 !important}
+  input,select,button,textarea{font-family:var(--font-main) !important;font-size:.82rem !important}
+  .table-mini td,.table-mini th,table td,table th{font-size:.80rem !important}
+  .muted{font-size:.74rem !important}
+</style>
+
+
+<style id="status-priority-badges-v1">
+  .badge-wrap{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .pill{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:800;
+    line-height:1;border:1px solid transparent;white-space:nowrap
+  }
+  .pill-status-open{background:#eef5ff;border-color:#d7e5ff;color:#264b7f}
+  .pill-status-progress{background:#fff7e8;border-color:#ffe0a8;color:#8a5a00}
+  .pill-status-done{background:#eaf8ea;border-color:#bfe6bf;color:#216b21}
+  .pill-status-hold{background:#f6eefc;border-color:#dfc6f7;color:#6a3f93}
+  .pill-priority-urgent{background:#ffe9e9;border-color:#ffcaca;color:#a52a2a}
+  .pill-priority-normal{background:#f3f4f6;border-color:#e5e7eb;color:#555}
+  .pill-overdue{background:#fff1f1;border-color:#ffd0d0;color:#b42318}
+</style>
+
+
+<style id="kpi-wrap-fix-v1">
+.summary .pill{
+  min-width: 0 !important;
+  overflow: hidden;
+}
+.summary .pill .l,
+.summary .pill .sub{
+  white-space: normal !important;
+  word-break: break-word;
+  line-height: 1.2 !important;
+}
+.summary .pill .l{
+  font-size: .72rem !important;
+}
+.summary .pill .sub{
+  font-size: .66rem !important;
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+<div class="top">
+<div class="brand">
+<div class="brand-inner">
+<div class="logo-wrap"><img alt="Reserva da Serra" src="reserva.png"/></div>
+<div class="brand-text">
+<div class="title">MANUTENÇÃO GERENCIAL</div>
+<div class="subtitle">Reserva da Serra</div>
+</div>
+<div class="logo-wrap right"><img alt="F&amp;F Serviços" src="FeF.png"/></div>
+</div>
+</div>
+<div class="banner" id="banner"></div>
+</div>
+<div class="grid ger">
+<div class="card">
+<div class="h2">Filtros e relatório</div>
+<div class="filters-grid">
+<div class="field"><label>Período inicial</label><input id="date_from" type="date"/></div>
+<div class="field"><label>Período final</label><input id="date_to" type="date"/></div>
+<div class="field"><label>Responsável</label><select id="assigned_filter"><option value="">Todos</option><option>Diogo</option><option>Natanael</option><option>Reginaldo</option><option>Bronzeri</option></select></div>
+<div class="field"><label>Categoria</label><select id="category_filter"><option value="">Todas</option><option>Elétrica</option><option>Hidráulica</option><option>Jardinagem</option><option>Civil</option><option>Pintura</option><option>Limpeza</option><option>Iluminação</option><option>Sinalização</option><option>Outros</option></select></div>
+<div class="field"><label>Status</label><select id="status_filter"><option value="">Todos</option><option>triagem</option><option>aberta</option><option>em análise</option><option>em analise</option><option>em execução</option><option>em execucao</option><option>on hold</option><option>concluída</option><option>concluida</option><option>cancelada</option></select></div>
+<div class="field"><label>Origem</label><select id="origin_filter"><option value="">Todas</option><option>manual</option><option>checklist</option></select></div>
+<div class="filter-actions">
+<button class="btn" onclick="applyFilters()">Aplicar</button>
+<button class="btn secondary" onclick="clearFilters()">Limpar</button>
+<button class="btn secondary" onclick="document.getElementById('resumoFinal').scrollIntoView({behavior:'smooth'})">Ir para resumo</button>
+</div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<div class="h2">Indicadores executivos</div>
+<div class="kpi-row">
+<div>
+<div class="summary">
+<div class="pill"><div class="n" id="kpi_total">-</div><div class="l">Total OS</div></div>
+<div class="pill"><div class="n" id="kpi_abertas">-</div><div class="l">Abertas</div></div>
+<div class="pill"><div class="n" id="kpi_atrasadas">-</div><div class="l">Atrasadas</div></div>
+<div class="pill"><div class="n" id="kpi_triagem">-</div><div class="l">Em triagem</div></div>
+<div class="pill"><div class="n" id="kpi_leadtime">-</div><div class="l">Lead time médio</div><div class="sub">OS concluídas</div></div>
+<div class="pill"><div class="n" id="kpi_status_age">-</div><div class="l">Tempo médio no status atual</div></div>
+<div class="pill"><div class="n" id="kpi_team_active">-</div><div class="l">Equipe ativa</div></div>
+<div class="pill"><div class="n" id="kpi_done_per_person">-</div><div class="l">Concluídas / responsável</div><div class="sub">Média do período</div></div>
+</div>
+<div class="toolbar" style="margin-top:12px">
+<div class="tag" id="connText">Conectando...</div>
+<div class="tag" id="syncText">Última sync: -</div>
+</div>
+</div>
+<div class="card" style="padding:12px">
+<div class="chart-title">Ranking da equipe</div>
+<div class="chart-subtitle">Volume concluído, lead time médio, abertas e atrasadas por responsável</div>
+<table class="table-mini">
+<thead><tr><th>Responsável</th><th>Concluídas</th><th>Lead médio</th><th>Abertas</th><th>Atrasadas</th></tr></thead>
+<tbody id="teamEffectivenessTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<div class="h2">Dashboard analítico</div>
+
+<div class="dashboard-grid">
+<div class="chart-card"><div class="chart-title">Status das ordens</div><div class="chart-subtitle">Carga atual por estágio</div><div class="chart-box"><canvas id="chartStatus"></canvas></div></div>
+<div class="chart-card"><div class="chart-title">Categorias</div><div class="chart-subtitle">Onde está concentrada a demanda</div><div class="chart-box"><canvas id="chartCategoria"></canvas></div></div>
+
+<div class="chart-card">
+<div class="chart-title">Entradas por dia</div>
+<div class="chart-subtitle">Distribuição diária no mês</div>
+<div class="chart-box"><canvas id="chartMensal_REMOVIDODiario"></canvas></div></div>
+<div class="chart-card"><div class="chart-title">TOP 5 locais com problema</div><div class="chart-subtitle">Ranking dinâmico dos pontos com mais OS</div><div class="chart-box"><canvas id="chartLocais"></canvas></div></div>
+<div class="chart-card"><div class="chart-title">Tempo médio por status</div><div class="chart-subtitle">Efetividade por etapa</div><div class="chart-box"><canvas id="chartTempoStatus"></canvas></div></div>
+<div class="chart-card"><div class="chart-title">Aging das abertas</div><div class="chart-subtitle">Quanto tempo as OS abertas estão paradas</div><div class="chart-box"><canvas id="chartAging"></canvas></div></div>
+<div class="chart-card"><div class="chart-title">Lead time por responsável</div><div class="chart-subtitle">Média das OS concluídas</div><div class="chart-box"><canvas id="chartResponsavel"></canvas></div></div>
+<div class="chart-card"><div class="chart-title">Produtividade da equipe</div><div class="chart-subtitle">OS concluídas por responsável</div><div class="chart-box"><canvas id="chartProdutividade"></canvas></div></div>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<div class="h2">Ordens de serviço</div>
+<div class="panel-note">A tabela agora mostra <strong>tempo no status atual</strong> e <strong>lead time total</strong>. Linhas amarelas indicam checklist/triagem. Linhas vermelhas indicam prioridade urgente. Ordens <strong>concluídas</strong> ficam destacadas em verde.</div>
+<div style="overflow:auto">
+<table>
+<thead><tr><th>OS</th><th>Título</th><th>Setor</th><th>Status</th><th>Tempo no status</th><th>Lead time</th><th>Responsável</th><th>Origem</th><th>Fotos</th></tr></thead>
+<tbody id="reportTable"></tbody>
+</table>
+</div>
+</div>
+<div class="card" id="resumoFinal" style="margin-top:14px">
+<div class="h2">Resumo mensal</div>
+<div class="panel-note">Base para relatório mensal automático.</div>
+<div style="overflow:auto">
+<table class="list-tight">
+<thead><tr><th>Mês</th><th>Total</th><th>Triagem</th><th>Concluídas</th><th>Checklist</th><th>Lead time médio</th></tr></thead>
+<tbody id="monthlyTable"></tbody>
+</table>
+</div>
+<hr style="border:none;border-top:1px solid var(--line);margin:14px 0"/>
+<div class="h2">Problemas recorrentes</div>
+<div style="overflow:auto">
+<table class="list-tight">
+<thead><tr><th>Problema</th><th>Setor</th><th>Ocorrências</th></tr></thead>
+<tbody id="recurringTable"></tbody>
+</table>
+</div>
+<hr style="border:none;border-top:1px solid var(--line);margin:14px 0"/>
+</div>
+</div>
+<div class="footer-status err" id="connectionFooter">Banco não conectado</div>
+<script>
+const SUPABASE_URL = 'https://brzmcjtlktyfmgkjfzvl.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyem1janRsa3R5Zm1na2pmenZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTUzMDMsImV4cCI6MjA4OTA5MTMwM30.XTOsD4anMb0gq1IANwvzAuQvHCYrY53Z975C8yLTTtc';
+function headers(){ return { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json', 'Prefer':'return=representation' }; }
+function baseUrl(){ return SUPABASE_URL; }
+let allRows = [];
+let statusHistoryRows = [];
+let hasHistory = false;
+let currentViewRows = [];
+let dashboardCharts = {};
+
+const statusOrder = ['triagem','aberta','em análise','em analise','em execução','em execucao','on hold','concluída','concluida','cancelada'];
+
+function normalizeStatus(value){
+  const s = String(value || '').trim().toLowerCase();
+  if(['em analise'].includes(s)) return 'em análise';
+  if(['em execucao'].includes(s)) return 'em execução';
+  if(['concluida'].includes(s)) return 'concluída';
+  return s;
+}
+function isClosedStatus(s){ return ['concluída','cancelada'].includes(normalizeStatus(s)); }
+function showBanner(text, type='ok'){
+  const el = document.getElementById('banner');
+  el.textContent = text;
+  el.className = 'banner show ' + (type === 'error' ? 'err' : type);
+  clearTimeout(window.__bannerTimer);
+  window.__bannerTimer = setTimeout(() => { el.className = 'banner'; }, 4200);
+}
+function setFooter(msg, ok=true){
+  const el = document.getElementById('connectionFooter');
+  el.textContent = msg;
+  el.className = 'footer-status ' + (ok ? 'ok' : 'err');
+}
+function fmtHours(v){
+  if(v===null||v===undefined||Number.isNaN(Number(v))) return '-';
+  const n = Number(v);
+  if(n < 1) return `${Math.round(n*60)} min`;
+  if(n < 24) return `${n.toFixed(1)} h`;
+  return `${(n/24).toFixed(1)} dias`;
+}
+function hoursBetween(a,b){
+  if(!a || !b) return null;
+  const ms = new Date(b).getTime() - new Date(a).getTime();
+  return ms >= 0 ? ms / 36e5 : null;
+}
+function monthKey(dt){ const d = new Date(dt); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function safeDate(value){ const d = value ? new Date(value) : null; return d && !Number.isNaN(d.getTime()) ? d : null; }
+function avg(arr){ const valid = arr.filter(v => Number.isFinite(v)); return valid.length ? valid.reduce((a,b)=>a+b,0)/valid.length : null; }
+function buildPublicUrl(path){ return path ? `${baseUrl()}/storage/v1/object/public/maintenance-photos/${path}` : ''; }
+
+function sqlSnippet(){
+return `create table if not exists public.maintenance_order_status_history (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.maintenance_orders(id) on delete cascade,
+  status text not null,
+  entered_at timestamptz not null default now(),
+  exited_at timestamptz,
+  changed_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_mosh_order_id on public.maintenance_order_status_history(order_id);
+create index if not exists idx_mosh_status on public.maintenance_order_status_history(status);
+
+create or replace function public.fn_track_maintenance_status()
+returns trigger
+language plpgsql
+as $$
+begin
+  if tg_op = 'INSERT' then
+    insert into public.maintenance_order_status_history(order_id, status, entered_at)
+    values (new.id, coalesce(new.status, 'aberta'), coalesce(new.opened_at, now()));
+    return new;
+  end if;
+
+  if coalesce(old.status,'') is distinct from coalesce(new.status,'') then
+    update public.maintenance_order_status_history
+       set exited_at = now()
+     where order_id = new.id
+       and exited_at is null;
+
+    insert into public.maintenance_order_status_history(order_id, status, entered_at)
+    values (new.id, coalesce(new.status, 'aberta'), now());
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_track_maintenance_status on public.maintenance_orders;
+create trigger trg_track_maintenance_status
+after insert or update of status on public.maintenance_orders
+for each row execute function public.fn_track_maintenance_status();`;
+}
+
+function destroyChartIfExists(key){
+  if(dashboardCharts[key]){ dashboardCharts[key].destroy(); dashboardCharts[key] = null; }
+}
+function createChart(key, id, type, data, options={}){
+  destroyChartIfExists(key);
+  dashboardCharts[key] = new Chart(document.getElementById(id), {
+    type,
+    data,
+    options: Object.assign({
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{ display:type !== 'bar' && type !== 'line' }, tooltip:{ enabled:true } },
+      scales: type === 'doughnut' || type === 'pie' ? {} : {
+        x: { ticks:{ color:'#5f746d' }, grid:{ color:'rgba(0,0,0,0.05)' } },
+        y: { ticks:{ color:'#5f746d' }, grid:{ color:'rgba(0,0,0,0.05)' } }
+      }
+    }, options)
+  });
+}
+
+function getOrderHistoryMap(){
+  const map = {};
+  statusHistoryRows.forEach(row => {
+    const key = row.order_id;
+    if(!map[key]) map[key] = [];
+    map[key].push(row);
+  });
+  Object.values(map).forEach(list => list.sort((a,b)=> new Date(a.entered_at) - new Date(b.entered_at)));
+  return map;
+}
+
+function computeRowMetrics(row, historyMap){
+  const nowIso = new Date().toISOString();
+  const openedAt = row.opened_at || row.created_at || row.inserted_at;
+  const isClosed = isClosedStatus(row.status);
+  const closedAt = row.closed_at || row.completed_at || row.finished_at || (isClosed ? row.updated_at : null);
+  const leadHours = openedAt ? hoursBetween(openedAt, closedAt || nowIso) : null;
+
+  const history = historyMap[row.id] || [];
+  let currentStatusHours = null;
+  const durationsByStatus = {};
+
+  if(history.length){
+    history.forEach(item => {
+      const status = normalizeStatus(item.status) || 'sem status';
+      const end = item.exited_at || (isClosed ? closedAt : nowIso);
+      const h = end ? hoursBetween(item.entered_at, end) : null;
+      if(Number.isFinite(h)) durationsByStatus[status] = (durationsByStatus[status] || 0) + h;
+    });
+
+    if(!isClosed){
+      const openRecord = [...history].reverse().find(item => !item.exited_at);
+      if(openRecord) currentStatusHours = hoursBetween(openRecord.entered_at, nowIso);
+    }
+  }
+
+  if(currentStatusHours === null && !isClosed){
+    const fallbackStatusAt = row.status_updated_at || row.updated_at || openedAt;
+    currentStatusHours = fallbackStatusAt ? hoursBetween(fallbackStatusAt, nowIso) : null;
+  }
+
+  if(isClosed){
+    currentStatusHours = null;
+  }
+
+  return { leadHours, currentStatusHours, durationsByStatus };
+}
+
+function enrichRows(rows){
+  const historyMap = getOrderHistoryMap();
+  return rows.map(row => ({ ...row, metrics: computeRowMetrics(row, historyMap) }));
+}
+
+function renderDashboard(rows){
+  const total = rows.length;
+  const abertas = rows.filter(r => !isClosedStatus(r.status)).length;
+  const atrasadas = rows.filter(r => !isClosedStatus(r.status) && r.due_at && new Date(r.due_at) < new Date()).length;
+  const triagem = rows.filter(r => normalizeStatus(r.status)==='triagem').length;
+  const leadTimes = rows.filter(r => isClosedStatus(r.status)).map(r => r.metrics.leadHours).filter(Number.isFinite);
+  const statusAges = rows.filter(r => !isClosedStatus(r.status)).map(r => r.metrics.currentStatusHours).filter(Number.isFinite);
+
+  const byPerson = {};
+  rows.forEach(r => {
+    const person = r.assigned_to || 'Não atribuído';
+    if(!byPerson[person]) byPerson[person] = { done:0, active:0 };
+    if(isClosedStatus(r.status)) byPerson[person].done++;
+    else byPerson[person].active++;
+  });
+
+  const activePeople = Object.entries(byPerson).filter(([,v]) => (v.done + v.active) > 0 && !['','Não atribuído'].includes(String(v))).length;
+  const donePerPerson = activePeople ? (rows.filter(r => isClosedStatus(r.status)).length / activePeople) : 0;
+
+  document.getElementById('kpi_total').textContent = total;
+  document.getElementById('kpi_abertas').textContent = abertas;
+  document.getElementById('kpi_atrasadas').textContent = atrasadas;
+  document.getElementById('kpi_triagem').textContent = triagem;
+  document.getElementById('kpi_leadtime').textContent = fmtHours(avg(leadTimes));
+  document.getElementById('kpi_status_age').textContent = fmtHours(avg(statusAges));
+  document.getElementById('kpi_team_active').textContent = activePeople;
+  document.getElementById('kpi_done_per_person').textContent = activePeople ? donePerPerson.toFixed(1) : '0';
+}
+
+function renderMonthlySummary(rows){
+  const byMonth = {};
+  rows.forEach(r => {
+    const k = monthKey(r.opened_at || new Date());
+    if(!byMonth[k]) byMonth[k] = {total:0, triagem:0, concluidas:0, checklist:0, leadTimes:[]};
+    byMonth[k].total++;
+    const s = normalizeStatus(r.status);
+    if(s==='triagem') byMonth[k].triagem++;
+    if(s==='concluída') byMonth[k].concluidas++;
+    if(String(r.origin||'').toLowerCase()==='checklist') byMonth[k].checklist++;
+    if(s==='concluída' && Number.isFinite(r.metrics.leadHours)) byMonth[k].leadTimes.push(r.metrics.leadHours);
+  });
+  const body = document.getElementById('monthlyTable');
+  body.innerHTML = '';
+  Object.keys(byMonth).sort().reverse().forEach(k => {
+    const m = byMonth[k];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${k}</strong></td><td>${m.total}</td><td>${m.triagem}</td><td>${m.concluidas}</td><td>${m.checklist}</td><td>${fmtHours(avg(m.leadTimes))}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function renderRecurringProblems(rows){
+  const counts = {};
+  rows.forEach(r => {
+    const key = `${r.sector || 'Sem setor'}||${(r.title || 'Sem título').trim()}`;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const body = document.getElementById('recurringTable');
+  body.innerHTML = '';
+  Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([k,v])=>{
+    const [sector,title] = k.split('||');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${title}</td><td>${sector}</td><td>${v}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function renderTeamEffectiveness(rows){
+  const byPerson = {};
+  rows.forEach(r => {
+    const person = r.assigned_to || 'Não atribuído';
+    if(!byPerson[person]) byPerson[person] = {done:0, leadTimes:[], open:0, overdue:0};
+
+    if(normalizeStatus(r.status)==='concluída'){
+      byPerson[person].done++;
+      if(Number.isFinite(r.metrics.leadHours)) byPerson[person].leadTimes.push(r.metrics.leadHours);
+    } else {
+      byPerson[person].open++;
+      if(r.due_at && new Date(r.due_at) < new Date()) byPerson[person].overdue++;
+    }
+  });
+
+  const tbody = document.getElementById('teamEffectivenessTable');
+  tbody.innerHTML = '';
+
+  Object.entries(byPerson)
+    .map(([name,v]) => ({
+      name,
+      done:v.done,
+      avg:avg(v.leadTimes),
+      open:v.open,
+      overdue:v.overdue
+    }))
+    .filter(x => x.done > 0 || x.open > 0)
+    .sort((a,b)=> (b.done - a.done) || (a.overdue - b.overdue) || ((a.avg||Infinity) - (b.avg||Infinity)))
+    .slice(0,8)
+    .forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.name}</td><td>${item.done}</td><td>${fmtHours(item.avg)}</td><td>${item.open}</td><td>${item.overdue}</td>`;
+      tbody.appendChild(tr);
+    });
+
+  if(!tbody.children.length){
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="5" class="muted">Sem dados suficientes para comparar a equipe.</td>';
+    tbody.appendChild(tr);
+  }
+}
+
+function renderCharts(rows){
+  const statusCount = {};
+  const catCount = {};
+  const sectorCount = {};
+  const monthly = {};
+  const daily = {};
+  const tempoStatus = {};
+  const tempoStatusCount = {};
+  const responsibleLead = {};
+  const responsibleDone = {};
+  const aging = {'0-1 dia':0,'1-3 dias':0,'3-7 dias':0,'7-15 dias':0,'15+ dias':0};
+
+  rows.forEach(r => {
+    const s = normalizeStatus(r.status) || 'sem status';
+    const c = r.category || 'Outros';
+    const sector = r.sector || 'Não informado';
+
+    let openedBase = r.opened_at || r.created_at || r.inserted_at || r.date || '';
+    let dateObj = openedBase ? new Date(openedBase) : null;
+
+    if (!dateObj || isNaN(dateObj)) {
+      const base = String(openedBase).split('T')[0];
+      const parts = base.split('-');
+      if (parts.length === 3) {
+        dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      }
+    }
+
+    let m = '';
+    let d = '';
+    if (dateObj && !isNaN(dateObj)) {
+      const y = dateObj.getFullYear();
+      const mo = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const da = String(dateObj.getDate()).padStart(2, '0');
+      m = `${y}-${mo}`;
+      d = `${y}-${mo}-${da}`;
+    }
+
+    statusCount[s] = (statusCount[s] || 0) + 1;
+    catCount[c] = (catCount[c] || 0) + 1;
+    sectorCount[sector] = (sectorCount[sector] || 0) + 1;
+    if(m) monthly[m] = (monthly[m] || 0) + 1;
+    if(d) daily[d] = (daily[d] || 0) + 1;
+
+    Object.entries(r.metrics.durationsByStatus || {}).forEach(([status,hours]) => {
+      tempoStatus[status] = (tempoStatus[status] || 0) + hours;
+      tempoStatusCount[status] = (tempoStatusCount[status] || 0) + 1;
+    });
+
+    if(!hasHistory && Number.isFinite(r.metrics.currentStatusHours)){
+      tempoStatus[s] = (tempoStatus[s] || 0) + r.metrics.currentStatusHours;
+      tempoStatusCount[s] = (tempoStatusCount[s] || 0) + 1;
+    }
+
+    if(!isClosedStatus(r.status) && Number.isFinite(r.metrics.currentStatusHours)){
+      const agingDays = r.metrics.currentStatusHours / 24;
+      if(agingDays <= 1) aging['0-1 dia']++;
+      else if(agingDays <= 3) aging['1-3 dias']++;
+      else if(agingDays <= 7) aging['3-7 dias']++;
+      else if(agingDays <= 15) aging['7-15 dias']++;
+      else aging['15+ dias']++;
+    }
+
+    if(normalizeStatus(r.status) === 'concluída'){
+      const person = r.assigned_to || 'Não atribuído';
+      responsibleDone[person] = (responsibleDone[person] || 0) + 1;
+      if(Number.isFinite(r.metrics.leadHours)){
+        if(!responsibleLead[person]) responsibleLead[person] = [];
+        responsibleLead[person].push(r.metrics.leadHours);
+      }
+    }
+  });
+
+  const sortedStatus = Object.keys(statusCount).sort((a,b)=> (statusOrder.indexOf(a) === -1 ? 99 : statusOrder.indexOf(a)) - (statusOrder.indexOf(b) === -1 ? 99 : statusOrder.indexOf(b)));
+  createChart('status','chartStatus','bar',{
+    labels: sortedStatus,
+    datasets:[{ label:'OS', data: sortedStatus.map(s => statusCount[s]), borderWidth:1, borderRadius:8 }]
+  },{ indexAxis:'y', plugins:{ legend:{display:false} } });
+
+  const catLabels = Object.keys(catCount).sort((a,b)=>catCount[b]-catCount[a]).slice(0,8);
+  createChart('categoria','chartCategoria','doughnut',{
+    labels: catLabels,
+    datasets:[{ data: catLabels.map(c => catCount[c]) }]
+  });
+
+  const months = Object.keys(monthly).sort();
+  
+
+  const sectorLabels = Object.keys(sectorCount)
+    .sort((a,b)=>sectorCount[b]-sectorCount[a])
+    .slice(0,5);
+
+  if(document.getElementById('chartLocais')){
+    createChart('locais','chartLocais','bar',{
+      labels: sectorLabels,
+      datasets:[{ label:'OS', data: sectorLabels.map(s => sectorCount[s]), borderRadius:8 }]
+    },{
+      indexAxis:'y',
+      plugins:{ legend:{display:false} },
+      scales:{ x:{ beginAtZero:true, ticks:{ precision:0 } } }
+    });
+  }
+
+  const latestMonth = months.length ? months[months.length - 1] : null;
+  let dailyLabels = [];
+
+  if (latestMonth) {
+    const parts = latestMonth.split('-');
+    const year = Number(parts[0]);
+    const month = Number(parts[1]);
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const day = String(i).padStart(2, '0');
+      dailyLabels.push(`${latestMonth}-${day}`);
+    }
+  } else {
+    dailyLabels = Object.keys(daily).sort().slice(-31);
+  }
+
+  if (document.getElementById('chartMensal_REMOVIDODiario')) {
+    createChart('mensalDiario','chartMensal_REMOVIDODiario','bar',{
+      labels: dailyLabels.map(k => {
+        const parts = k.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}` : k;
+      }),
+      datasets:[{
+        label:'Entradas por dia',
+        data: dailyLabels.map(k => daily[k] || 0),
+        borderRadius:6
+      }]
+    },{
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ beginAtZero:true, ticks:{ precision:0 } }
+      }
+    });
+  }
+
+  const tempoLabels = Object.keys(tempoStatus).sort((a,b)=>((tempoStatus[a]/tempoStatusCount[a]) - (tempoStatus[b]/tempoStatusCount[b]))).slice(-8);
+  createChart('tempoStatus','chartTempoStatus','bar',{
+    labels: tempoLabels,
+    datasets:[{ label:'Horas médias', data: tempoLabels.map(s => (tempoStatus[s] / tempoStatusCount[s]).toFixed(1)) }]
+  },{ plugins:{ legend:{display:false} } });
+
+  const agingLabels = Object.keys(aging);
+  createChart('aging','chartAging','bar',{
+    labels: agingLabels,
+    datasets:[{ label:'OS abertas', data: agingLabels.map(k => aging[k]) }]
+  },{ plugins:{ legend:{display:false} } });
+
+  const respLeadLabels = Object.keys(responsibleLead)
+    .map(name => ({name, avg:avg(responsibleLead[name]), count:responsibleLead[name].length}))
+    .filter(x => x.count > 0)
+    .sort((a,b)=> a.avg - b.avg)
+    .slice(0,8);
+
+  createChart('responsavel','chartResponsavel','bar',{
+    labels: respLeadLabels.map(x => x.name),
+    datasets:[{ label:'Horas médias', data: respLeadLabels.map(x => x.avg.toFixed(1)) }]
+  },{ plugins:{ legend:{display:false} } });
+
+  const productivityLabels = Object.keys(responsibleDone)
+    .map(name => ({name, done: responsibleDone[name]}))
+    .sort((a,b) => b.done - a.done)
+    .slice(0,8);
+
+  if(document.getElementById('chartProdutividade')){
+    createChart('produtividade','chartProdutividade','bar',{
+      labels: productivityLabels.map(x => x.name),
+      datasets:[{ label:'Concluídas', data: productivityLabels.map(x => x.done), borderRadius:8 }]
+    },{ plugins:{ legend:{display:false} } });
+  }
+}
+
+function filteredRows(){
+  let rows = [...allRows];
+  const d1 = document.getElementById('date_from').value;
+  const d2 = document.getElementById('date_to').value;
+  const assigned = document.getElementById('assigned_filter').value;
+  const cat = document.getElementById('category_filter').value;
+  const st = document.getElementById('status_filter').value;
+  const origin = document.getElementById('origin_filter').value;
+
+  if(d1) rows = rows.filter(r => new Date(r.opened_at) >= new Date(d1 + 'T00:00:00'));
+  if(d2) rows = rows.filter(r => new Date(r.opened_at) <= new Date(d2 + 'T23:59:59'));
+  if(assigned) rows = rows.filter(r => (r.assigned_to || '') === assigned);
+  if(cat) rows = rows.filter(r => (r.category || '') === cat);
+  if(st) rows = rows.filter(r => normalizeStatus(r.status) === normalizeStatus(st));
+  if(origin) rows = rows.filter(r => String(r.origin || '').toLowerCase() === origin);
+  return rows;
+}
+
+function loadReport(rows){
+  const tbody = document.getElementById('reportTable');
+  tbody.innerHTML = '';
+
+  const sortedRows = [...rows].sort((a, b) => {
+    const getRank = (row) => {
+      const status = normalizeStatus(row.status);
+      const priority = String(row.priority || '').toLowerCase();
+      const isClosed = status === 'concluída';
+      const isOverdue = !isClosed && row.due_at && new Date(row.due_at) < new Date();
+
+      if(isClosed) return 4;
+      if(priority === 'urgente') return 1;
+      if(isOverdue) return 2;
+      return 3;
+    };
+
+    const rankDiff = getRank(a) - getRank(b);
+    if(rankDiff !== 0) return rankDiff;
+
+    const aDate = new Date(a.opened_at || a.created_at || 0).getTime();
+    const bDate = new Date(b.opened_at || b.created_at || 0).getTime();
+    return bDate - aDate;
+  });
+
+  sortedRows.slice(0,250).forEach(row => {
+    const beforeUrl = row.before_photo_path ? buildPublicUrl(row.before_photo_path) : '';
+    const afterUrl = row.after_photo_path ? buildPublicUrl(row.after_photo_path) : '';
+    const photos = [beforeUrl ? `<a href="${beforeUrl}" target="_blank">Antes</a>` : '', afterUrl ? `<a href="${afterUrl}" target="_blank">Depois</a>` : ''].filter(Boolean).join(' | ') || '-';
+    const tr = document.createElement('tr');
+    const origin = String(row.origin || '-').toLowerCase();
+    const status = normalizeStatus(row.status);
+    const priority = String(row.priority || '').toLowerCase();
+    const isClosed = status === 'concluída';
+    const isOverdue = !isClosed && row.due_at && new Date(row.due_at) < new Date();
+
+    if(status === 'concluída') tr.classList.add('done-row');
+    if(origin === 'checklist' || status === 'triagem') tr.classList.add('checklist-row');
+    if(priority === 'urgente') tr.classList.add('urgent-row');
+    if(isOverdue) tr.classList.add('overdue-row');
+
+    const originBadge = origin === 'checklist'
+      ? '<span class="origin-badge checklist">Checklist</span>'
+      : '<span class="origin-badge manual">Manual</span>';
+
+    const statusLabel = row.status || '-';
+    const statusClass = isClosed
+      ? 'pill-status-done'
+      : (status === 'triagem' || status === 'aberta' || status === 'aberto')
+        ? 'pill-status-open'
+        : (status === 'on hold' || status === 'pausada' || status === 'pausado')
+          ? 'pill-status-hold'
+          : 'pill-status-progress';
+
+    const priorityLabel = priority === 'urgente' ? 'Urgente' : (row.priority || 'Normal');
+    const priorityClass = priority === 'urgente' ? 'pill-priority-urgent' : 'pill-priority-normal';
+    const overdueBadge = isOverdue ? '<span class="pill pill-overdue">Atrasada</span>' : '';
+
+    tr.innerHTML = `
+      <td><strong>${row.os_number || row.order_number || '-'}</strong><br><span class="muted" style="font-size:.78rem">${row.opened_at ? new Date(row.opened_at).toLocaleString('pt-BR') : '-'}</span></td>
+      <td>${row.title || '-'}</td>
+      <td>${row.sector || '-'}</td>
+      <td><div class="badge-wrap"><span class="pill ${statusClass}">${statusLabel}</span><span class="pill ${priorityClass}">${priorityLabel}</span>${overdueBadge}</div></td>
+      <td><strong>${fmtHours(row.metrics.currentStatusHours)}</strong></td>
+      <td>${fmtHours(row.metrics.leadHours)}</td>
+      <td>${row.assigned_to || '-'}</td>
+      <td>${originBadge}</td>
+      <td class="photo-links">${photos}</td>
+`;
+    tbody.appendChild(tr);
+  });
+
+  showBanner(`${rows.length} registro(s) filtrado(s).`,'ok');
+}
+
+function applyFilters(){
+  currentViewRows = enrichRows(filteredRows());
+  renderDashboard(currentViewRows);
+  renderCharts(currentViewRows);
+  renderMonthlySummary(currentViewRows);
+  renderRecurringProblems(currentViewRows);
+  renderTeamEffectiveness(currentViewRows);
+  loadReport(currentViewRows);
+}
+
+function clearFilters(){
+  ['date_from','date_to','assigned_filter','category_filter','status_filter','origin_filter'].forEach(id => document.getElementById(id).value = '');
+  applyFilters();
+}
+
+
+
+async function testConnection(){
+  try {
+    const r = await fetch(baseUrl() + '/rest/v1/maintenance_orders?select=id&limit=1', { headers: headers() });
+    if(!r.ok) throw new Error(await r.text());
+    document.getElementById('connText').textContent = 'Conectado';
+    document.getElementById('connText').className = 'tag ok';
+    setFooter('Banco conectado', true);
+    await loadAll();
+  } catch(err) {
+    document.getElementById('connText').textContent = 'Sem conexão';
+    document.getElementById('connText').className = 'tag err';
+    setFooter('Banco não conectado', false);
+    showBanner('Falha na conexão: ' + err.message,'error');
+  }
+}
+
+async function tryLoadStatusHistory(){
+  try {
+    const r = await fetch(baseUrl() + '/rest/v1/maintenance_order_status_history?select=order_id,status,entered_at,exited_at&order=entered_at.desc&limit=5000', { headers: headers() });
+    if(!r.ok) throw new Error(await r.text());
+    statusHistoryRows = await r.json();
+    hasHistory = true;
+  } catch(err) {
+    statusHistoryRows = [];
+    hasHistory = false;
+  }
+}
+
+async function loadAll(){
+  try {
+    const r = await fetch(baseUrl() + '/rest/v1/maintenance_orders?select=*&order=opened_at.desc&limit=400', { headers: headers() });
+    if(!r.ok) throw new Error(await r.text());
+    allRows = await r.json();
+    await tryLoadStatusHistory();
+    applyFilters();
+    document.getElementById('syncText').textContent = 'Última sync: ' + new Date().toLocaleTimeString('pt-BR');
+} catch(err) {
+    showBanner('Falha ao carregar dados: ' + err.message,'error');
+  }
+}
+
+window.addEventListener('load', async () => { await testConnection(); });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("table tbody tr").forEach(row => {
+        const status = row.innerText.toLowerCase();
+        if (status.includes("conclu")) {
+            row.classList.add("completed-row");
+        }
+        if (status.includes("atras")) {
+            row.classList.add("overdue-row");
+        }
+    });
+});
+</script>
+
+
+
+<script id="monthly-wide-hook">
+document.addEventListener('DOMContentLoaded', function(){
+  var monthlyCanvas = document.getElementById('chartMensal_REMOVIDO');
+  if(monthlyCanvas){
+    var card = monthlyCanvas.closest('.chart-card');
+    if(card) card.classList.add('monthly-wide');
+  }
+});
+</script>
+
+
+<script id="safe-card-order-v5">
+document.addEventListener('DOMContentLoaded', function(){
+  const grid = document.querySelector('.dashboard-grid');
+  if(!grid) return;
+
+  const cards = Array.from(grid.querySelectorAll('.chart-card'));
+  if(!cards.length) return;
+
+  const wanted = [
+    'status das ordens',
+    'categorias',
+    'entradas por dia',
+    'lead time por responsável',
+    'entradas por mês',
+    'tempo médio por status',
+    'aging das abertas'
+  ];
+
+  const byTitle = new Map();
+  cards.forEach(card => {
+    const titleEl = card.querySelector('.chart-title');
+    const title = (titleEl?.textContent || '').trim().toLowerCase();
+    if(title) byTitle.set(title, card);
+  });
+
+  const ordered = [];
+  wanted.forEach(title => {
+    const card = byTitle.get(title);
+    if(card) ordered.push(card);
+  });
+  cards.forEach(card => {
+    if(!ordered.includes(card)) ordered.push(card);
+  });
+
+  ordered.forEach(card => grid.appendChild(card));
+});
+</script>
+
+</body>
+</html>

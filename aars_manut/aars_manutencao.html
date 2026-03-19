@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AARS Manutenção</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#f3f6f3;
+      --card:#ffffff;
+      --text:#173a34;
+      --muted:#5f746d;
+      --line:#d9e2dd;
+      --green:#0f6a53;
+      --green-2:#0b4d3d;
+      --gold:#d4a61d;
+      --red:#b33d3d;
+      --orange:#b86a00;
+      --shadow:0 12px 28px rgba(16,52,45,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .app{max-width:1320px;margin:0 auto;padding:18px 16px 60px}
+    .hero{background:linear-gradient(135deg,var(--green),var(--green-2));color:#fff;border-radius:28px;padding:22px;box-shadow:var(--shadow);border:2px solid rgba(212,166,29,.32)}
+    .hero h1{margin:0 0 6px;font-size:1.9rem}
+    .hero p{margin:0;color:rgba(255,255,255,.9)}
+    .top-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .grid{display:grid;gap:16px}
+    .grid-2{grid-template-columns:1.15fr .85fr}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .section-title h2,.section-title h3{margin:0}
+    .muted{color:var(--muted)}
+    .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+    .tab-btn,.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer}
+    .tab-btn{background:#e7efeb;color:var(--text)}
+    .tab-btn.active{background:var(--green);color:#fff}
+    .btn{background:var(--green);color:#fff}
+    .btn.secondary{background:#eef3f0;color:var(--text);border:1px solid var(--line)}
+    .btn.warn{background:#fff5e8;color:#8a5200;border:1px solid #f0d1a5}
+    .btn.danger{background:#fff0f0;color:#8d2222;border:1px solid #f0c1c1}
+    .btn.small{padding:9px 12px;border-radius:12px;font-size:.92rem}
+    .hidden{display:none!important}
+    .kpi{padding:16px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(180deg,#fff,#f9fbfa)}
+    .kpi .label{font-size:.92rem;color:var(--muted)}
+    .kpi .value{font-size:1.8rem;font-weight:800;margin-top:6px}
+    form .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    form .row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    label{display:block;font-size:.93rem;font-weight:700;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid #cfdad5;background:#fff;font:inherit;color:var(--text)}
+    textarea{min-height:92px;resize:vertical}
+    .hint{font-size:.86rem;color:var(--muted);margin-top:5px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-weight:700;font-size:.8rem}
+    .p-priority-urgent{background:#ffe8e8;color:#902c2c}
+    .p-priority-high{background:#fff0e0;color:#9a4d00}
+    .p-priority-normal{background:#eef6ff;color:#20518a}
+    .p-priority-low{background:#eef7ef;color:#2f6b36}
+    .p-status-open{background:#eef6ff;color:#23528f}
+    .p-status-analysis{background:#f2edff;color:#5b3da8}
+    .p-status-progress{background:#fff3df;color:#9a5600}
+    .p-status-hold{background:#fff0f0;color:#963030}
+    .p-status-done{background:#eaf7f0;color:#216a3c}
+    .p-status-cancelled{background:#f0f0f0;color:#666}
+    .list{display:grid;gap:12px}
+    .os-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff}
+    .os-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+    .os-title{font-size:1.08rem;font-weight:800;margin-bottom:4px}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .meta span{padding:6px 10px;border-radius:999px;background:#f3f6f4;font-size:.83rem}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px}
+    .photos img{width:100%;height:120px;object-fit:cover;border-radius:14px;border:1px solid var(--line);background:#eef3f0}
+    .filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    .banner{position:sticky;top:10px;z-index:20;margin:0 auto 12px;max-width:860px;padding:12px 16px;border-radius:14px;font-weight:700;display:none}
+    .banner.show{display:block}
+    .banner.ok{background:#eaf7f0;color:#1f6b3a;border:1px solid #bfe2c9}
+    .banner.err{background:#fff0f0;color:#8d2525;border:1px solid #efc1c1}
+    .timeline{display:grid;gap:10px}
+    .timeline-item{padding:12px;border:1px solid var(--line);border-radius:14px;background:#fbfcfb}
+    .report-block{border:1px dashed #c8d6d0;border-radius:18px;padding:16px;background:#fbfdfc}
+    .report-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .report-pair img{width:100%;height:220px;object-fit:cover;border-radius:16px;border:1px solid var(--line);background:#eef3f0}
+    .footer-note{font-size:.86rem;color:var(--muted);margin-top:8px}
+    @media (max-width:1100px){.grid-2,.grid-3,.grid-4,.filters,form .row,form .row-3,.report-pair{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div id="banner" class="banner"></div>
+
+    <section class="hero">
+      <h1>AARS Manutenção</h1>
+      <p>Ordem de serviço operacional + visão gerencial para a Reserva da Serra.</p>
+      <div class="top-actions">
+        <button class="btn secondary" id="btnTabOperacional">Operacional</button>
+        <button class="btn secondary" id="btnTabGerencial">Gerencial</button>
+        <button class="btn secondary" id="btnLoadDemo">Carregar exemplo</button>
+        <button class="btn secondary" id="btnRefreshNow">Atualizar agora</button>
+        <button class="btn" id="btnPrintReport">Imprimir relatório</button>
+      </div>
+    </section>
+
+    <section class="tabs">
+      <button class="tab-btn active" data-tab="operacional">Lançamento / Fila</button>
+      <button class="tab-btn" data-tab="gerencial">Painel Gerencial</button>
+      <button class="tab-btn" data-tab="config">Configuração</button>
+    </section>
+
+    <section id="tab-operacional" class="tab-panel">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="section-title">
+            <h2>Nova ordem de serviço</h2>
+            <span class="muted">Fotos, GPS, SLA e atribuição</span>
+          </div>
+          <form id="osForm">
+            <div class="row-3">
+              <div>
+                <label>Número da OS</label>
+                <input id="osNumber" type="text" readonly placeholder="Gerado automaticamente ao salvar" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="status">
+                  <option value="aberta">Aberta</option>
+                  <option value="em_analise">Em análise</option>
+                  <option value="em_execucao">Em execução</option>
+                  <option value="on_hold">On hold</option>
+                  <option value="concluida">Concluída</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </div>
+              <div>
+                <label>Prioridade</label>
+                <select id="priority">
+                  <option value="baixa">Baixa</option>
+                  <option value="normal" selected>Normal</option>
+                  <option value="alta">Alta</option>
+                  <option value="urgente">Urgente</option>
+                </select>
+              </div>
+            </div>
+            <div class="row-3">
+              <div>
+                <label>Categoria *</label>
+                <select id="category" required></select>
+              </div>
+              <div>
+                <label>Solicitante *</label>
+                <select id="requester" required>
+                  <option value="Segurança">Segurança</option>
+                  <option value="Gerência">Gerência</option>
+                  <option value="Manutenção">Manutenção</option>
+                </select>
+              </div>
+              <div>
+                <label>Responsável</label>
+                <select id="assignedTo"></select>
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <label>Problema / título *</label>
+                <input id="title" required placeholder="Ex.: poste apagado próximo ao lago" />
+              </div>
+              <div>
+                <label>Setor *</label>
+                <input id="sector" required placeholder="Ex.: Lago, Portaria, Área comum" />
+              </div>
+            </div>
+            <div class="row-3">
+              <div>
+                <label>Quadra</label>
+                <input id="block" placeholder="Opcional" />
+              </div>
+              <div>
+                <label>Área comum</label>
+                <input id="commonArea" placeholder="Ex.: playground, praça, trilha" />
+              </div>
+              <div>
+                <label>Motivo de on hold</label>
+                <select id="holdReason">
+                  <option value="">Não se aplica</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>Descrição detalhada *</label>
+              <textarea id="description" required placeholder="Descreva o problema, impacto, referência visual e observações."></textarea>
+            </div>
+            <div class="row-3">
+              <div>
+                <label>Latitude</label>
+                <input id="lat" placeholder="Capturada automaticamente" />
+              </div>
+              <div>
+                <label>Longitude</label>
+                <input id="lng" placeholder="Capturada automaticamente" />
+              </div>
+              <div>
+                <label>Prazo alvo</label>
+                <input id="dueAt" type="datetime-local" />
+                <div class="hint">Preenchido automaticamente conforme prioridade.</div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn secondary small" type="button" id="btnCaptureLocation">Capturar localização</button>
+              <button class="btn secondary small" type="button" id="btnFillDeadline">Recalcular prazo</button>
+              <button class="btn small" type="submit">Salvar OS</button>
+              <button class="btn secondary small" type="button" id="btnResetForm">Limpar</button>
+            </div>
+            <div class="row" style="margin-top:14px">
+              <div>
+                <label>Foto antes</label>
+                <input id="beforePhotos" type="file" accept="image/*" multiple capture="environment" />
+                <div class="hint">No celular pode abrir a câmera; no PC aceita colar por Ctrl+V no quadro abaixo.</div>
+                <div id="beforeDrop" class="report-block">Clique aqui e cole a imagem com Ctrl+V.</div>
+                <div id="beforePreview" class="photos"></div>
+              </div>
+              <div>
+                <label>Foto depois</label>
+                <input id="afterPhotos" type="file" accept="image/*" multiple capture="environment" />
+                <div class="hint">Use quando a ordem estiver concluída.</div>
+                <div id="afterDrop" class="report-block">Clique aqui e cole a imagem com Ctrl+V.</div>
+                <div id="afterPreview" class="photos"></div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="section-title">
+            <h2>Fila operacional</h2>
+            <span class="muted">Equipe única puxando OS • <span id="syncInfo">sem sincronização</span></span>
+          </div>
+          <div class="filters">
+            <input id="filterText" placeholder="Buscar por título ou setor" />
+            <select id="filterStatus"><option value="">Todos os status</option></select>
+            <select id="filterPriority"><option value="">Todas prioridades</option></select>
+            <select id="filterAssigned"><option value="">Todos responsáveis</option></select>
+            <select id="filterCategory"><option value="">Todas categorias</option></select>
+          </div>
+          <div id="operationalList" class="list" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-gerencial" class="tab-panel hidden">
+      <div class="grid grid-4">
+        <div class="kpi"><div class="label">OS abertas</div><div class="value" id="kpiOpen">0</div></div>
+        <div class="kpi"><div class="label">OS atrasadas</div><div class="value" id="kpiLate">0</div></div>
+        <div class="kpi"><div class="label">Tempo médio de resposta</div><div class="value" id="kpiResponse">0h</div></div>
+        <div class="kpi"><div class="label">Tempo médio de resolução</div><div class="value" id="kpiResolution">0h</div></div>
+      </div>
+
+      <div class="grid grid-3" style="margin-top:16px">
+        <div class="card">
+          <div class="section-title"><h3>Status</h3></div>
+          <div id="statusSummary" class="list"></div>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>Categorias</h3></div>
+          <div id="categorySummary" class="list"></div>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>Responsáveis</h3></div>
+          <div id="personSummary" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="section-title">
+          <h2>Relatório executivo e operacional</h2>
+          <span class="muted">Período filtrado + antes/depois</span>
+        </div>
+        <div class="filters">
+          <input id="reportDateFrom" type="date" />
+          <input id="reportDateTo" type="date" />
+          <select id="reportStatus"><option value="">Todos os status</option></select>
+          <select id="reportResponsible"><option value="">Todos responsáveis</option></select>
+          <button class="btn" id="btnGenerateReport">Gerar relatório</button>
+        </div>
+        <div id="reportArea" style="margin-top:18px"></div>
+      </div>
+    </section>
+
+    <section id="tab-config" class="tab-panel hidden">
+      <div class="card">
+        <div class="section-title">
+          <h2>Configuração Supabase</h2>
+          <span class="muted">Opcional: funciona localmente com localStorage</span>
+        </div>
+        <div class="row">
+          <div>
+            <label>Project URL</label>
+            <input id="cfgUrl" placeholder="https://SEU-PROJETO.supabase.co" value="https://brzmcjtlktyfmgkjfzvl.supabase.co" />
+          </div>
+          <div>
+            <label>Anon key</label>
+            <textarea id="cfgAnon" placeholder="Cole aqui a chave pública anon">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyem1janRsa3R5Zm1na2pmenZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTUzMDMsImV4cCI6MjA4OTA5MTMwM30.XTOsD4anMb0gq1IANwvzAuQvHCYrY53Z975C8yLTTtc</textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btnSaveConfig">Salvar configuração</button>
+          <button class="btn secondary" id="btnTestConnection">Testar conexão</button>
+        </div>
+        <div class="footer-note">A versão local já permite validar a lógica. Quando você tiver a chave pública, o app passa a gravar no Supabase.</div>
+      </div>
+    </section>
+  </div>
+
+<script>
+const CATEGORIES = ['Elétrica','Hidráulica','Jardinagem','Civil','Pintura','Limpeza','Iluminação','Sinalização','Outros'];
+const TEAM = ['Diogo','Natanael','Reginaldo','Bronzeri'];
+const HOLD_REASONS = ['Aguardando material','Aguardando aprovação','Aguardando terceiro','Aguardando clima','Aguardando acesso ao local'];
+const PRIORITY_DEADLINES = {baixa:{days:7}, normal:{days:3}, alta:{hours:24}, urgente:{hours:4}};
+const STATUS_LABELS = {
+  aberta:'Aberta', em_analise:'Em análise', em_execucao:'Em execução', on_hold:'On hold', concluida:'Concluída', cancelada:'Cancelada'
+};
+
+let state = { orders: [], editingId: null, beforePhotos: [], afterPhotos: [], supabase:null };
+
+const $ = id => document.getElementById(id);
+const storageKey = 'aars_manutencao_v1';
+const configKey = 'aars_manutencao_cfg';
+
+function showBanner(msg,type='ok'){
+  const el=$('banner');
+  el.textContent=msg;
+  el.className=`banner show ${type}`;
+  clearTimeout(showBanner.t);
+  showBanner.t=setTimeout(()=>el.className='banner',2800);
+}
+function escapeHtml(str=''){return String(str).replace(/[&<>\"]/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));}
+function nowIso(){return new Date().toISOString();}
+function toLocalInputValue(dt){ if(!dt) return ''; const d=new Date(dt); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+function fromLocalInputValue(v){ return v ? new Date(v).toISOString() : null; }
+function hoursBetween(a,b){ return Math.max(0, (new Date(b)-new Date(a))/36e5); }
+function formatHours(v){ if(!isFinite(v)||v<=0) return '0h'; if(v<24) return `${v.toFixed(1)}h`; return `${(v/24).toFixed(1)}d`; }
+function saveLocal(){ localStorage.setItem(storageKey, JSON.stringify({orders:state.orders})); }
+function loadLocal(){ try{ const raw=JSON.parse(localStorage.getItem(storageKey)||'{}'); state.orders=raw.orders||[]; }catch{ state.orders=[]; } }
+function saveConfig(){ localStorage.setItem(configKey, JSON.stringify({url:$('cfgUrl').value.trim(), anon:$('cfgAnon').value.trim()})); }
+function loadConfig(){
+  try{
+    const cfg = JSON.parse(localStorage.getItem(configKey) || '{}');
+    if(cfg.url) $('cfgUrl').value = cfg.url;
+    if(cfg.anon) $('cfgAnon').value = cfg.anon;
+  }catch{}
+}
+function nextOsNumber(){
+  return 'Automático';
+}
+function computeDueAt(priority){
+  const base = new Date();
+  const rule = PRIORITY_DEADLINES[priority] || PRIORITY_DEADLINES.normal;
+  if(rule.days) base.setDate(base.getDate()+rule.days);
+  if(rule.hours) base.setHours(base.getHours()+rule.hours);
+  return base.toISOString();
+}
+function priorityClass(v){ return `p-priority-${v||'normal'}`; }
+function statusClass(v){ return ({aberta:'p-status-open',em_analise:'p-status-analysis',em_execucao:'p-status-progress',on_hold:'p-status-hold',concluida:'p-status-done',cancelada:'p-status-cancelled'})[v]||'p-status-open'; }
+function isLate(order){ return order.status!=='concluida' && order.status!=='cancelada' && order.due_at && new Date(order.due_at) < new Date(); }
+function average(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function updateSyncInfo(msg=''){ const el=$('syncInfo'); if(!el) return; el.textContent = msg || (state.lastSyncAt ? `última atualização ${new Date(state.lastSyncAt).toLocaleTimeString('pt-BR')}` : 'sem sincronização'); }
+
+function fillSelects(){
+  const category = $('category');
+  category.innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  const assigned = $('assignedTo');
+  assigned.innerHTML = '<option value="">Não atribuído</option>' + TEAM.map(n=>`<option value="${n}">${n}</option>`).join('');
+  $('holdReason').innerHTML += HOLD_REASONS.map(r=>`<option value="${r}">${r}</option>`).join('');
+  ['filterCategory'].forEach(id=>$(id).innerHTML += CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join(''));
+  ['filterAssigned','reportResponsible'].forEach(id=>$(id).innerHTML += TEAM.map(n=>`<option value="${n}">${n}</option>`).join(''));
+  ['filterStatus','reportStatus'].forEach(id=>$(id).innerHTML += Object.entries(STATUS_LABELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join(''));
+  ['filterPriority'].forEach(id=>$(id).innerHTML += [['baixa','Baixa'],['normal','Normal'],['alta','Alta'],['urgente','Urgente']].map(([k,v])=>`<option value="${k}">${v}</option>`).join(''));
+}
+
+function resetForm(){
+  state.editingId = null;
+  $('osForm').reset();
+  $('status').value='aberta';
+  $('priority').value='normal';
+  $('dueAt').value=toLocalInputValue(computeDueAt('normal'));
+  $('osNumber').value = 'Automático';
+  state.beforePhotos = [];
+  state.afterPhotos = [];
+  renderPhotoPreview('beforePreview', state.beforePhotos);
+  renderPhotoPreview('afterPreview', state.afterPhotos);
+}
+
+function renderPhotoPreview(elId, photos){
+  $(elId).innerHTML = photos.map(src=>`<img src="${src}" alt="foto">`).join('');
+}
+function fileListToDataUrls(files){
+  return Promise.all([...files].map(file=>new Promise((resolve,reject)=>{
+    const r = new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);
+  })));
+}
+async function addPhotos(target, files){
+  const urls = await fileListToDataUrls(files);
+  state[target] = state[target].concat(urls).slice(0,8);
+  renderPhotoPreview(target==='beforePhotos'?'beforePreview':'afterPreview', state[target]);
+}
+function setupPasteArea(dropId, target){
+  const area=$(dropId);
+  area.tabIndex=0;
+  area.addEventListener('paste', async e=>{
+    const items=[...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith('image/'));
+    if(!items.length) return;
+    e.preventDefault();
+    const files = items.map(i=>i.getAsFile()).filter(Boolean);
+    await addPhotos(target, files);
+    showBanner('Imagem colada com sucesso.');
+  });
+}
+function captureLocation(){
+  if(!navigator.geolocation){ showBanner('Geolocalização não suportada.', 'err'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $('lat').value = pos.coords.latitude.toFixed(6);
+    $('lng').value = pos.coords.longitude.toFixed(6);
+    showBanner('Localização capturada.');
+  },()=>showBanner('Não foi possível capturar a localização.', 'err'),{enableHighAccuracy:true, timeout:15000, maximumAge:0});
+}
+
+function getFormData(){
+  return {
+    id: state.editingId || crypto.randomUUID(),
+    os_number: state.editingId ? ($('osNumber').value || null) : null,
+    status: $('status').value,
+    priority: $('priority').value,
+    category: $('category').value,
+    title: $('title').value.trim(),
+    description: $('description').value.trim(),
+    sector: $('sector').value.trim(),
+    block: $('block').value.trim() || null,
+    common_area: $('commonArea').value.trim() || null,
+    requester: $('requester').value,
+    assigned_to: $('assignedTo').value || null,
+    hold_reason: $('status').value==='on_hold' ? ($('holdReason').value || null) : null,
+    latitude: $('lat').value.trim() || null,
+    longitude: $('lng').value.trim() || null,
+    due_at: fromLocalInputValue($('dueAt').value) || computeDueAt($('priority').value),
+    before_photos: state.beforePhotos,
+    after_photos: state.afterPhotos,
+    created_at: state.editingId ? (state.orders.find(o=>o.id===state.editingId)?.created_at || nowIso()) : nowIso(),
+    updated_at: nowIso(),
+    picked_at: $('assignedTo').value ? nowIso() : null,
+    first_response_at: $('assignedTo').value ? nowIso() : null,
+    completed_at: $('status').value==='concluida' ? nowIso() : null
+  };
+}
+
+
+async function insertHistorySafe(orderId, status, note) {
+  if (!orderId) throw new Error('OS sem ID real para gravar histórico.');
+  const historyPayload = {
+    order_id: orderId,
+    status: status || 'Aberta',
+    note: note || 'OS criada'
+  };
+  const { error: historyError } = await supabase
+    .from('maintenance_order_history')
+    .insert(historyPayload);
+  if (historyError) throw historyError;
+}
+
+async function saveOrder(order){
+  const existingIndex = state.orders.findIndex(o=>o.id===order.id);
+  const existing = existingIndex >=0 ? state.orders[existingIndex] : null;
+
+  if(existing){
+    order.created_at = existing.created_at;
+    order.os_number = existing.os_number;
+    order.first_response_at = existing.first_response_at || order.first_response_at;
+    order.picked_at = existing.picked_at || order.picked_at;
+    if(order.status==='concluida' && !existing.completed_at) order.completed_at = nowIso();
+    else order.completed_at = existing.completed_at || order.completed_at;
+  }
+
+  if(state.supabase){
+    await syncOrderToSupabase(order, Boolean(existing));
+    await loadOrdersFromSupabase();
+    return;
+  }
+
+  if(existing){
+    state.orders[existingIndex] = {...existing, ...order};
+  } else {
+    order.os_number = order.os_number || nextOsNumber();
+    state.orders.unshift(order);
+  }
+  saveLocal();
+  renderAll();
+}
+
+function mapDbToOrder(row){
+  return {
+    id: row.id,
+    os_number: row.os_number,
+    status: row.status,
+    priority: row.priority,
+    category: row.category,
+    title: row.title,
+    description: row.description,
+    sector: row.sector,
+    block: row.block_code || null,
+    common_area: row.common_area || null,
+    requester: row.requester_role,
+    assigned_to: row.assigned_to_name || null,
+    hold_reason: row.hold_reason || null,
+    latitude: row.latitude == null ? '' : String(row.latitude),
+    longitude: row.longitude == null ? '' : String(row.longitude),
+    due_at: row.due_at,
+    before_photos: Array.isArray(row.before_photos_json) ? row.before_photos_json : [],
+    after_photos: Array.isArray(row.after_photos_json) ? row.after_photos_json : [],
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    picked_at: row.picked_at,
+    first_response_at: row.first_response_at,
+    completed_at: row.completed_at
+  };
+}
+
+async function loadOrdersFromSupabase(){
+  if(!state.supabase) return;
+  const {data,error} = await state.supabase
+    .from('maintenance_orders')
+    .select('*')
+    .order('created_at',{ascending:false})
+    .limit(500);
+  if(error) throw error;
+  state.orders = (data||[]).map(mapDbToOrder);
+  state.lastSyncAt = new Date().toISOString();
+  updateSyncInfo(`última atualização ${new Date(state.lastSyncAt).toLocaleTimeString('pt-BR')} • ${state.orders.length} OS carregadas`);
+  saveLocal();
+  renderAll();
+}
+
+async function syncOrderToSupabase(order, isUpdate=false){
+  if(!state.supabase) {
+    showBanner('OS salva apenas neste navegador. Conecte o Supabase para persistir no banco.', 'warn');
+    return;
+  }
+
+  let response;
+  if(isUpdate){
+    const payload = mapOrderToDb(order);
+    response = await state.supabase
+      .from('maintenance_orders')
+      .update(payload)
+      .eq('id', order.id)
+      .select('*')
+      .single();
+  } else {
+    const payload = mapOrderToDb(order);
+    delete payload.os_number;
+    delete payload.picked_at;
+    delete payload.first_response_at;
+    delete payload.completed_at;
+    response = await state.supabase
+      .from('maintenance_orders')
+      .insert(payload)
+      .select('*')
+      .single();
+  }
+
+  const {data,error} = response;
+  if(error) {
+    console.error(error);
+    const msg = error.message || 'erro não identificado';
+    if(String(msg).toLowerCase().includes('os_number')){
+      throw new Error('Conflito na numeração da OS. A numeração agora é gerada pelo banco; atualize a página e tente novamente.');
+    }
+    throw error;
+  }
+  const saved = mapDbToOrder(data);
+  const idx = state.orders.findIndex(o=>o.id===saved.id);
+  if(idx>=0) state.orders[idx] = {...state.orders[idx], ...saved};
+  else state.orders.unshift(saved);
+  saveLocal();
+  renderAll();
+}
+function mapOrderToDb(order){
+  return {
+    id: order.id,
+    os_number: order.os_number,
+    title: order.title,
+    description: order.description,
+    category: order.category,
+    priority: order.priority,
+    status: order.status,
+    hold_reason: order.hold_reason,
+    requester_role: order.requester,
+    assigned_to_name: order.assigned_to,
+    sector: order.sector,
+    block_code: order.block,
+    common_area: order.common_area,
+    latitude: order.latitude ? Number(order.latitude) : null,
+    longitude: order.longitude ? Number(order.longitude) : null,
+    due_at: order.due_at,
+    picked_at: order.picked_at,
+    first_response_at: order.first_response_at,
+    completed_at: order.completed_at,
+    before_photos_json: order.before_photos,
+    after_photos_json: order.after_photos,
+    source_channel: 'web_app'
+  };
+}
+
+function renderOperationalList(){
+  const text = $('filterText').value.trim().toLowerCase();
+  const status = $('filterStatus').value;
+  const priority = $('filterPriority').value;
+  const assigned = $('filterAssigned').value;
+  const category = $('filterCategory').value;
+  const rows = state.orders.filter(o=>{
+    if(text && !(o.title.toLowerCase().includes(text) || (o.sector||'').toLowerCase().includes(text))) return false;
+    if(status && o.status!==status) return false;
+    if(priority && o.priority!==priority) return false;
+    if(assigned && (o.assigned_to||'')!==assigned) return false;
+    if(category && o.category!==category) return false;
+    return true;
+  });
+  $('operationalList').innerHTML = rows.length ? rows.map(o=>{
+    const late = isLate(o) ? '<span class="pill p-status-hold">Atrasada</span>' : '';
+    const before = (o.before_photos||[])[0] ? `<img src="${o.before_photos[0]}" alt="antes">` : '';
+    const after = (o.after_photos||[])[0] ? `<img src="${o.after_photos[0]}" alt="depois">` : '';
+    return `<div class="os-card">
+      <div class="os-head">
+        <div>
+          <div class="os-title">${escapeHtml(o.os_number)} • ${escapeHtml(o.title)}</div>
+          <div class="muted">${escapeHtml(o.description)}</div>
+        </div>
+        <div class="meta">
+          <span class="pill ${priorityClass(o.priority)}">${escapeHtml(o.priority)}</span>
+          <span class="pill ${statusClass(o.status)}">${escapeHtml(STATUS_LABELS[o.status])}</span>
+          ${late}
+        </div>
+      </div>
+      <div class="meta">
+        <span>Categoria: ${escapeHtml(o.category)}</span>
+        <span>Setor: ${escapeHtml(o.sector)}</span>
+        <span>Solicitante: ${escapeHtml(o.requester)}</span>
+        <span>Responsável: ${escapeHtml(o.assigned_to || 'Não atribuído')}</span>
+        <span>Prazo: ${o.due_at ? new Date(o.due_at).toLocaleString('pt-BR') : '-'}</span>
+      </div>
+      ${o.hold_reason ? `<div class="hint">On hold: ${escapeHtml(o.hold_reason)}</div>` : ''}
+      <div class="actions">
+        <button class="btn secondary small" onclick="editOrder('${o.id}')">Editar</button>
+        <button class="btn small" onclick="takeOrder('${o.id}')">Puxar para mim</button>
+        <button class="btn warn small" onclick="markStatus('${o.id}','em_execucao')">Em execução</button>
+        <button class="btn secondary small" onclick="markStatus('${o.id}','on_hold')">On hold</button>
+        <button class="btn small" onclick="markStatus('${o.id}','concluida')">Concluir</button>
+      </div>
+      ${(before || after) ? `<div class="photos">${before}${after}</div>` : ''}
+    </div>`;
+  }).join('') : '<div class="muted">Nenhuma OS encontrada.</div>';
+}
+
+function summariseBy(field){
+  const map = {};
+  state.orders.forEach(o=>{ const key=o[field] || 'Não definido'; map[key]=(map[key]||0)+1; });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function renderSummaryList(elId, entries, labelMap=null){
+  $(elId).innerHTML = entries.length ? entries.map(([k,v])=>`<div class="timeline-item"><strong>${escapeHtml(labelMap?.[k] || k)}</strong><div class="muted">${v} OS</div></div>`).join('') : '<div class="muted">Sem dados.</div>';
+}
+
+function renderDashboard(){
+  const openCount = state.orders.filter(o=>!['concluida','cancelada'].includes(o.status)).length;
+  const lateCount = state.orders.filter(isLate).length;
+  const responses = state.orders.filter(o=>o.first_response_at).map(o=>hoursBetween(o.created_at,o.first_response_at));
+  const resolutions = state.orders.filter(o=>o.completed_at).map(o=>hoursBetween(o.created_at,o.completed_at));
+  $('kpiOpen').textContent = openCount;
+  $('kpiLate').textContent = lateCount;
+  $('kpiResponse').textContent = formatHours(average(responses));
+  $('kpiResolution').textContent = formatHours(average(resolutions));
+  renderSummaryList('statusSummary', summariseBy('status'), STATUS_LABELS);
+  renderSummaryList('categorySummary', summariseBy('category'));
+  renderSummaryList('personSummary', summariseBy('assigned_to'));
+}
+
+function generateReport(){
+  const d1 = $('reportDateFrom').value ? new Date($('reportDateFrom').value+'T00:00:00') : null;
+  const d2 = $('reportDateTo').value ? new Date($('reportDateTo').value+'T23:59:59') : null;
+  const status = $('reportStatus').value;
+  const resp = $('reportResponsible').value;
+  const rows = state.orders.filter(o=>{
+    const created = new Date(o.created_at);
+    if(d1 && created < d1) return false;
+    if(d2 && created > d2) return false;
+    if(status && o.status!==status) return false;
+    if(resp && (o.assigned_to||'')!==resp) return false;
+    return true;
+  });
+  const concluidas = rows.filter(o=>o.status==='concluida').length;
+  const atrasadas = rows.filter(isLate).length;
+  const report = `
+    <div class="report-block">
+      <h3 style="margin-top:0">Relatório executivo</h3>
+      <div class="grid grid-4">
+        <div class="kpi"><div class="label">Total no período</div><div class="value">${rows.length}</div></div>
+        <div class="kpi"><div class="label">Concluídas</div><div class="value">${concluidas}</div></div>
+        <div class="kpi"><div class="label">Atrasadas</div><div class="value">${atrasadas}</div></div>
+        <div class="kpi"><div class="label">Taxa de conclusão</div><div class="value">${rows.length?Math.round((concluidas/rows.length)*100):0}%</div></div>
+      </div>
+      <div class="footer-note">Período filtrado de ${d1?d1.toLocaleDateString('pt-BR'):'início'} até ${d2?d2.toLocaleDateString('pt-BR'):'hoje'}.</div>
+    </div>
+    <div style="margin-top:14px" class="list">
+      ${rows.map(o=>`
+        <div class="report-block">
+          <div class="os-head">
+            <div>
+              <div class="os-title">${escapeHtml(o.os_number)} • ${escapeHtml(o.title)}</div>
+              <div class="muted">${escapeHtml(o.category)} • ${escapeHtml(o.sector)} • ${escapeHtml(o.assigned_to || 'Não atribuído')}</div>
+            </div>
+            <div class="meta">
+              <span class="pill ${priorityClass(o.priority)}">${escapeHtml(o.priority)}</span>
+              <span class="pill ${statusClass(o.status)}">${escapeHtml(STATUS_LABELS[o.status])}</span>
+            </div>
+          </div>
+          <p>${escapeHtml(o.description)}</p>
+          <div class="report-pair">
+            <div><strong>Antes</strong><div class="photos">${(o.before_photos||[]).length?(o.before_photos||[]).map(p=>`<img src="${p}">`).join(''):'<div class="muted">Sem foto antes.</div>'}</div></div>
+            <div><strong>Depois</strong><div class="photos">${(o.after_photos||[]).length?(o.after_photos||[]).map(p=>`<img src="${p}">`).join(''):'<div class="muted">Sem foto depois.</div>'}</div></div>
+          </div>
+          <div class="footer-note">Abertura: ${new Date(o.created_at).toLocaleString('pt-BR')} • Prazo: ${o.due_at?new Date(o.due_at).toLocaleString('pt-BR'):'-'} • Conclusão: ${o.completed_at?new Date(o.completed_at).toLocaleString('pt-BR'):'-'}</div>
+        </div>
+      `).join('') || '<div class="muted">Nenhuma OS encontrada para o período.</div>'}
+    </div>`;
+  $('reportArea').innerHTML = report;
+}
+
+function editOrder(id){
+  const o = state.orders.find(x=>x.id===id); if(!o) return;
+  state.editingId = o.id;
+  $('osNumber').value=o.os_number;
+  $('status').value=o.status;
+  $('priority').value=o.priority;
+  $('category').value=o.category;
+  $('requester').value=o.requester;
+  $('assignedTo').value=o.assigned_to||'';
+  $('title').value=o.title;
+  $('sector').value=o.sector;
+  $('block').value=o.block||'';
+  $('commonArea').value=o.common_area||'';
+  $('holdReason').value=o.hold_reason||'';
+  $('description').value=o.description;
+  $('lat').value=o.latitude||'';
+  $('lng').value=o.longitude||'';
+  $('dueAt').value=toLocalInputValue(o.due_at);
+  state.beforePhotos = o.before_photos||[];
+  state.afterPhotos = o.after_photos||[];
+  renderPhotoPreview('beforePreview', state.beforePhotos);
+  renderPhotoPreview('afterPreview', state.afterPhotos);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+async function takeOrder(id){
+  const responsible = prompt('Quem está puxando esta OS?\n' + TEAM.join(', '));
+  if(!responsible || !TEAM.includes(responsible)) return showBanner('Informe exatamente um nome da equipe.', 'err');
+  const o = state.orders.find(x=>x.id===id); if(!o) return;
+  o.assigned_to = responsible;
+  o.picked_at = o.picked_at || nowIso();
+  o.first_response_at = o.first_response_at || nowIso();
+  o.updated_at = nowIso();
+  await saveOrder(o);
+  showBanner(`OS atribuída a ${responsible}.`);
+}
+async function markStatus(id,status){
+  const o = state.orders.find(x=>x.id===id); if(!o) return;
+  o.status = status;
+  if(status==='concluida') o.completed_at = nowIso();
+  if(status!=='on_hold') o.hold_reason = null;
+  o.updated_at = nowIso();
+  await saveOrder(o);
+}
+window.editOrder=editOrder; window.takeOrder=takeOrder; window.markStatus=markStatus;
+
+async function initSupabase(){
+  const url=$('cfgUrl').value.trim();
+  const anon=$('cfgAnon').value.trim();
+  if(!url || !anon){
+    state.supabase = null;
+    showBanner('Preencha a Project URL e a anon key antes de testar.', 'err');
+    return;
+  }
+  try{
+    state.supabase = window.supabase.createClient(url, anon);
+    const {error} = await state.supabase.from('maintenance_orders').select('id').limit(1);
+    if(error && !String(error.message||'').includes('0 rows')) throw error;
+    await loadOrdersFromSupabase();
+    if(state.syncTimer) clearInterval(state.syncTimer);
+    state.syncTimer = setInterval(async()=>{ try{ await loadOrdersFromSupabase(); }catch(err){ console.error(err); updateSyncInfo('falha ao atualizar'); } }, 15000);
+    showBanner('Conexão com Supabase validada e OS carregadas do banco.');
+  }catch(err){
+    console.error(err); state.supabase=null; updateSyncInfo('falha na conexão'); showBanner('Falha ao conectar no Supabase: ' + (err.message||'erro não identificado'), 'err');
+  }
+}
+
+function loadDemo(){
+  const demo = {
+    id: crypto.randomUUID(), os_number: nextOsNumber(), status:'em_execucao', priority:'alta', category:'Iluminação',
+    title:'Poste apagado próximo ao lago', description:'Luminosidade insuficiente em trecho de circulação noturna.',
+    sector:'Lago', block:null, common_area:'caminho lateral', requester:'Segurança', assigned_to:'Diogo', hold_reason:null,
+    latitude:'-23.123456', longitude:'-46.123456', due_at:computeDueAt('alta'), created_at:nowIso(), updated_at:nowIso(),
+    picked_at:nowIso(), first_response_at:nowIso(), completed_at:null, before_photos:[], after_photos:[]
+  };
+  state.orders.unshift(demo); saveLocal(); renderAll(); showBanner('Exemplo carregado.');
+}
+
+function openTab(name){
+  document.querySelectorAll('.tab-panel').forEach(el=>el.classList.add('hidden'));
+  $('tab-'+name).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.tab===name));
+}
+function renderAll(){ renderOperationalList(); renderDashboard(); generateReport(); }
+
+function bind(){
+  document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>openTab(btn.dataset.tab)));
+  $('btnTabOperacional').addEventListener('click',()=>openTab('operacional'));
+  $('btnTabGerencial').addEventListener('click',()=>openTab('gerencial'));
+  $('btnPrintReport').addEventListener('click',()=>window.print());
+  $('btnRefreshNow').addEventListener('click', async()=>{
+    try{
+      if(!state.supabase) await initSupabase();
+      else await loadOrdersFromSupabase();
+      showBanner('Lista atualizada a partir do banco.');
+    }catch(err){
+      console.error(err);
+      showBanner('Falha ao atualizar a lista: ' + (err.message||'erro não identificado'), 'err');
+    }
+  });
+  $('btnLoadDemo').addEventListener('click',loadDemo);
+  $('btnCaptureLocation').addEventListener('click',captureLocation);
+  $('btnFillDeadline').addEventListener('click',()=>$('dueAt').value=toLocalInputValue(computeDueAt($('priority').value)));
+  $('priority').addEventListener('change',()=>$('dueAt').value=toLocalInputValue(computeDueAt($('priority').value)));
+  $('btnResetForm').addEventListener('click',resetForm);
+  $('beforePhotos').addEventListener('change',e=>addPhotos('beforePhotos', e.target.files));
+  $('afterPhotos').addEventListener('change',e=>addPhotos('afterPhotos', e.target.files));
+  setupPasteArea('beforeDrop','beforePhotos');
+  setupPasteArea('afterDrop','afterPhotos');
+  $('osForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const order = getFormData();
+    if(!order.title || !order.description || !order.sector) return showBanner('Preencha os campos obrigatórios.', 'err');
+    try{
+      await saveOrder(order);
+      resetForm();
+      showBanner('OS salva com sucesso.');
+    }catch(err){
+      console.error(err);
+      showBanner('Falha ao salvar a OS no banco: ' + (err.message||'erro não identificado'), 'err');
+    }
+  });
+  ['filterText','filterStatus','filterPriority','filterAssigned','filterCategory'].forEach(id=>$(id).addEventListener('input',renderOperationalList));
+  $('btnGenerateReport').addEventListener('click',generateReport);
+  $('btnSaveConfig').addEventListener('click', async()=>{
+    saveConfig();
+    await initSupabase();
+    if(state.supabase) showBanner('Configuração salva e conexão validada.');
+  });
+  $('btnTestConnection').addEventListener('click', initSupabase);
+}
+
+loadLocal();
+loadConfig();
+fillSelects();
+resetForm();
+bind();
+renderAll();
+updateSyncInfo();
+initSupabase();
+</script>
+</body>
+</html>
