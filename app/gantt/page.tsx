@@ -14,7 +14,11 @@ export default async function GanttPage() {
   return (
     <AppShell>
       <div className="page-shell space-y-6">
-        <PageHeader title="Gantt Mestre" description="Visão executiva dos projetos" />
+        <PageHeader
+          eyebrow="Planejamento executivo"
+          title="Gantt Mestre"
+          description="Organize e acompanhe os projetos do PMO."
+        />
         <GanttBoard projects={projects} />
       </div>
     </AppShell>
