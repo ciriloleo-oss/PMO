@@ -7,11 +7,13 @@ import {
   Users,
   LayoutDashboard,
   ReceiptText,
+  CalendarRange,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/gantt", label: "Gantt", icon: CalendarRange },
   { href: "/projects", label: "Projetos", icon: FolderKanban },
   { href: "/documents", label: "Documentos", icon: FileText },
   { href: "/rfq", label: "RFQ", icon: ReceiptText },

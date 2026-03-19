@@ -12,7 +12,18 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
-type UpdateRow = Database["public"]["Tables"]["project_updates"]["Row"];
+type UpdateRow = Pick<
+  Database["public"]["Tables"]["project_updates"]["Row"],
+  | "id"
+  | "project_id"
+  | "update_date"
+  | "title"
+  | "summary"
+  | "physical_progress"
+  | "financial_progress"
+  | "published_to_residents"
+  | "created_at"
+>;
 
 export default async function ProjectDetailPage({
   params,

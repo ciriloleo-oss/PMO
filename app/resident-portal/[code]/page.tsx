@@ -17,7 +17,18 @@ type ProjectRow = Pick<
   "id" | "code" | "name" | "public_summary" | "physical_progress" | "planned_end_date" | "status" | "visibility"
 >;
 
-type UpdateRow = Database["public"]["Tables"]["project_updates"]["Row"];
+type UpdateRow = Pick<
+  Database["public"]["Tables"]["project_updates"]["Row"],
+  | "id"
+  | "project_id"
+  | "update_date"
+  | "title"
+  | "summary"
+  | "physical_progress"
+  | "financial_progress"
+  | "published_to_residents"
+  | "created_at"
+>;
 type DocumentRow = Database["public"]["Tables"]["documents"]["Row"];
 
 export default async function ResidentPortalProjectPage({
